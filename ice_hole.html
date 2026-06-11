@@ -593,6 +593,12 @@ function spawnPtPopup(text, x, y) {
   ptPopups.push({ text, x, y, t: 0, duration: 1.6 });
 }
 
+// 포획 로그 한 줄 포맷 (HUD 로그와 결과화면 로그가 공유 — 여기만 고치면 둘 다 반영)
+function formatCatchEntry(c, num) {
+  const combo = c.combo > 1 ? `, ${c.combo}x Combo` : '';
+  return `#${num}: ${c.pt}  (${c.w.toFixed(1)}kg${combo})`;
+}
+
 function spawnFish() {
   const w = parseFloat((0.5 + Math.random() * 3.5).toFixed(2));
   fish = {
@@ -857,10 +863,9 @@ function endGame() {
   logEl.innerHTML = '';
   catchLog.forEach((c, i) => {
     const num = catchLog.length - i;
-    const comboStr = c.combo > 1 ? `, ${c.combo}x Combo` : '';
     const div = document.createElement('div');
     div.className = 'result-log-item';
-    div.textContent = `#${num}: ${c.pt}  (${c.w.toFixed(1)}kg${comboStr})`;
+    div.textContent = formatCatchEntry(c, num);
     logEl.appendChild(div);
   });
 
@@ -1629,8 +1634,7 @@ function drawHUD(holeY, holeRy) {
       const c      = catchLog[i];
       const rowY   = by + 30 * S + i * lineH;
       ctx.globalAlpha = 1.0 - i * 0.15;
-      const comboStr = c.combo > 1 ? ` (${c.w.toFixed(1)}kg, ${c.combo}x Combo)` : ` (${c.w.toFixed(1)}kg)`;
-      ctx.fillText(`#${catchCount - i}: ${c.pt}${comboStr}`, lx, rowY);
+      ctx.fillText(formatCatchEntry(c, catchCount - i), lx, rowY);
     }
     ctx.globalAlpha = 1;
   }
