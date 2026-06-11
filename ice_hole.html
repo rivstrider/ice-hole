@@ -141,8 +141,10 @@
     background: rgba(0,26,51,0.9);
     border: 1px solid rgba(168,216,240,0.18);
     border-radius: 12px;
-    width: 400px;
-    height: 480px;
+    width: 440px;
+    max-width: calc(100vw - 40px);
+    height: 70vh;
+    max-height: 560px;
     box-sizing: border-box;
     pointer-events: all;
     position: relative;
@@ -249,10 +251,10 @@
   .lb-header .lbh-score,
   .lb-header .lbh-catch,
   .lb-header .lbh-combo { text-align: center; }
-  #leaderboardList { display: flex; flex-direction: column; gap: 5px; flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(168,216,240,0.3) transparent; }
-  #leaderboardList::-webkit-scrollbar { width: 4px; }
-  #leaderboardList::-webkit-scrollbar-track { background: transparent; }
-  #leaderboardList::-webkit-scrollbar-thumb { background: rgba(168,216,240,0.3); border-radius: 2px; }
+  #leaderboardList, #lbPopupList { display: flex; flex-direction: column; gap: 5px; flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(168,216,240,0.3) transparent; }
+  #leaderboardList::-webkit-scrollbar, #lbPopupList::-webkit-scrollbar { width: 4px; }
+  #leaderboardList::-webkit-scrollbar-track, #lbPopupList::-webkit-scrollbar-track { background: transparent; }
+  #leaderboardList::-webkit-scrollbar-thumb, #lbPopupList::-webkit-scrollbar-thumb { background: rgba(168,216,240,0.3); border-radius: 2px; }
   .lb-item { font-size: 14px; font-weight: 400; color: rgba(168,216,240,0.85); }
   .lb-item.lb-me { color: #ffffff; }
   .lb-rank { font-size: 13px; color: #7aa8c4; text-align: center; }
@@ -268,8 +270,9 @@
   .lb-combo { font-size: 12px; color: #7aa8c4; text-align: center; white-space: nowrap; }
   #resultPanel {
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 20px;
     padding: 24px;
     background: rgba(0,26,51,0.9);
     border: 1px solid rgba(168,216,240,0.18);
@@ -279,14 +282,14 @@
     box-sizing: border-box;
     pointer-events: all;
   }
-  #resultOverlay .result-score { font-family: 'Noto Sans KR', sans-serif; font-size: 80px; color: #ffffff; line-height: 1; margin-bottom: 20px; }
+  #resultOverlay .result-col-left { display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
+  #resultOverlay .result-score { font-family: 'Noto Sans KR', sans-serif; font-size: 64px; color: #ffffff; line-height: 1; margin-bottom: 18px; }
   #resultOverlay .result-score-label { font-family: 'Noto Sans KR', sans-serif; font-size: 11px; color: #7aa8c4; letter-spacing: 2px; margin-bottom: 4px; }
-  #resultOverlay .result-stats-row { display: flex; flex-direction: row; align-items: flex-start; justify-content: center; gap: 32px; width: 100%; margin-bottom: 4px; }
+  #resultOverlay .result-stats-row { display: flex; flex-direction: row; align-items: flex-start; justify-content: center; gap: 28px; }
   #resultOverlay .result-stat { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-  #resultOverlay .result-stat-val { font-family: 'Noto Sans KR', sans-serif; font-size: 32px; color: #7aa8c4; line-height: 1; }
+  #resultOverlay .result-stat-val { font-family: 'Noto Sans KR', sans-serif; font-size: 28px; color: #7aa8c4; line-height: 1; }
   #resultOverlay .result-stat-label { font-family: 'Noto Sans KR', sans-serif; font-size: 11px; color: #7aa8c4; letter-spacing: 2px; opacity: 0.6; }
-  #resultOverlay .result-divider { width: 100%; height: 1px; background: rgba(168,216,240,0.12); margin: 12px 0; }
-  #resultOverlay .result-log { width: 100%; height: 96px; flex: none; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; scrollbar-width: thin; scrollbar-color: rgba(168,216,240,0.3) transparent; }
+  #resultOverlay .result-log { flex: 1; min-width: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; border-left: 1px solid rgba(168,216,240,0.12); padding-left: 20px; scrollbar-width: thin; scrollbar-color: rgba(168,216,240,0.3) transparent; }
   #resultOverlay .result-log::-webkit-scrollbar { width: 4px; }
   #resultOverlay .result-log::-webkit-scrollbar-track { background: transparent; }
   #resultOverlay .result-log::-webkit-scrollbar-thumb { background: rgba(168,216,240,0.3); border-radius: 2px; }
@@ -349,19 +352,20 @@
   <div id="resultTitle">TIME UP</div>
   <div id="resultContainer">
     <div id="resultPanel">
-      <div class="result-score-label">SCORE</div>
-      <div class="result-score"><span id="finalScore">0</span></div>
-      <div class="result-stats-row">
-        <div class="result-stat">
-          <div class="result-stat-label">FISH</div>
-          <div class="result-stat-val" id="finalCatch">0</div>
-        </div>
-        <div class="result-stat">
-          <div class="result-stat-label">MAX COMBO</div>
-          <div class="result-stat-val" id="finalCombo">0x</div>
+      <div class="result-col-left">
+        <div class="result-score-label">SCORE</div>
+        <div class="result-score"><span id="finalScore">0</span></div>
+        <div class="result-stats-row">
+          <div class="result-stat">
+            <div class="result-stat-label">FISH</div>
+            <div class="result-stat-val" id="finalCatch">0</div>
+          </div>
+          <div class="result-stat">
+            <div class="result-stat-label">MAX COMBO</div>
+            <div class="result-stat-val" id="finalCombo">0x</div>
+          </div>
         </div>
       </div>
-      <div class="result-divider"></div>
       <div class="result-log" id="finalLog"></div>
     </div>
     <div id="leaderboardPanel">
