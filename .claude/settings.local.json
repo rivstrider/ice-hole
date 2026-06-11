@@ -18,7 +18,10 @@
       "Bash(git commit -q -m 'Increase leaderboard popup vertical margin further *)",
       "Bash(git commit -q -m 'Mobile: pointer events, disable zoom/scroll, fix tap-and-hold reeling *)",
       "Bash(git commit -q -m 'Make canvas cover full viewport \\(remove mobile letterbox bands\\) *)",
-      "Bash(git commit -q -m 'Fill canvas to safe-area edges with inset:0 \\(iOS Safari\\) *)"
+      "Bash(git commit -q -m 'Fill canvas to safe-area edges with inset:0 \\(iOS Safari\\) *)",
+      "Bash(curl -s \"https://firestore.googleapis.com/v1/projects/gordon-icehole/databases/\\(default\\)/documents/leaderboard?pageSize=300\")",
+      "Bash(python3 -c ' *)",
+      "Bash(git commit -q -m 'Always show 100 leaderboard rows with '\\\\''-'\\\\'' placeholders *)"
     ]
   }
 }

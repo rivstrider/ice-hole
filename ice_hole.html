@@ -269,6 +269,8 @@
   #leaderboardList::-webkit-scrollbar-thumb, #lbPopupList::-webkit-scrollbar-thumb { background: rgba(168,216,240,0.3); border-radius: 2px; }
   .lb-item { font-size: 14px; font-weight: 400; color: rgba(168,216,240,0.85); }
   .lb-item.lb-me { color: #ffffff; }
+  .lb-item.lb-empty { opacity: 0.35; }
+  .lb-item.lb-empty .lb-name { text-align: center; padding-right: 0; }
   .lb-rank { font-size: 13px; color: #7aa8c4; text-align: center; }
   .lb-flag { text-align: center; }
   .lb-item.lb-me .lb-rank { color: #a8d8f0; }
@@ -764,27 +766,39 @@ function applyNicknameChange() {
   btn.disabled = true;
 }
 
+const LB_ROWS = 100;  // 기록이 없어도 100등까지 항상 표시
+
 function renderLeaderboardRows(listEl, entries, highlightId) {
   listEl.innerHTML = '';
-  if (entries.length === 0) {
-    listEl.innerHTML = '<div style="color:rgba(168,216,240,0.3);font-size:13px;font-family:\'Noto Sans KR\'">No records yet</div>';
-    return;
-  }
   const medals = ['🥇','🥈','🥉'];
-  entries.forEach((e, i) => {
+  for (let i = 0; i < LB_ROWS; i++) {
+    const e = entries[i];
     const row = document.createElement('div');
-    row.className = 'lb-item' + (e.id === highlightId ? ' lb-me' : '');
     const rankClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
-    row.innerHTML = `
-      <span class="lb-rank ${rankClass}">${i < 3 ? medals[i] : (i+1)}</span>
-      <span class="lb-flag">${e.flag || ''}</span>
-      <span class="lb-name">${e.name}</span>
-      <span class="lb-score">${e.score}</span>
-      <span class="lb-catches">${e.catches}</span>
-      <span class="lb-combo">${e.maxCombo > 1 ? e.maxCombo + 'x' : '-'}</span>
-    `;
+    if (e) {
+      row.className = 'lb-item' + (e.id === highlightId ? ' lb-me' : '');
+      row.innerHTML = `
+        <span class="lb-rank ${rankClass}">${i < 3 ? medals[i] : (i+1)}</span>
+        <span class="lb-flag">${e.flag || ''}</span>
+        <span class="lb-name">${e.name}</span>
+        <span class="lb-score">${e.score}</span>
+        <span class="lb-catches">${e.catches}</span>
+        <span class="lb-combo">${e.maxCombo > 1 ? e.maxCombo + 'x' : '-'}</span>
+      `;
+    } else {
+      // 빈 슬롯: 순위만 표시, 나머지는 '-'
+      row.className = 'lb-item lb-empty';
+      row.innerHTML = `
+        <span class="lb-rank ${rankClass}">${i < 3 ? medals[i] : (i+1)}</span>
+        <span class="lb-flag">-</span>
+        <span class="lb-name">-</span>
+        <span class="lb-score">-</span>
+        <span class="lb-catches">-</span>
+        <span class="lb-combo">-</span>
+      `;
+    }
     listEl.appendChild(row);
-  });
+  }
 }
 
 async function openLbPopup() {
