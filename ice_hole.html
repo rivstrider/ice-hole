@@ -405,6 +405,8 @@ const IMG_PATHS = {
 (function loadImages() {
   for (const [key, path] of Object.entries(IMG_PATHS)) {
     const img = new Image();
+    // 로드 완료 시, 게임 루프가 안 돌고 있으면(타이틀/대기 화면) 다시 그린다
+    img.onload = () => { if (!gameActive) draw(); };
     img.src = path;
     IMG[key] = img;
   }
