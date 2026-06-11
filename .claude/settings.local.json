@@ -15,7 +15,8 @@
       "Bash(curl -s \"https://rivstrider.github.io/ice-hole/ice_hole.html?t=$\\(date +%s\\)\" > /tmp/live.html *)",
       "Bash(git commit -q -m 'Make leaderboard popup adapt to viewport with scrolling list *)",
       "Bash(git commit -q -m 'Add vertical margin around leaderboard popup on mobile *)",
-      "Bash(git commit -q -m 'Increase leaderboard popup vertical margin further *)"
+      "Bash(git commit -q -m 'Increase leaderboard popup vertical margin further *)",
+      "Bash(git commit -q -m 'Mobile: pointer events, disable zoom/scroll, fix tap-and-hold reeling *)"
     ]
   }
 }

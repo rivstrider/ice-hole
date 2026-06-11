@@ -2,11 +2,17 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>ICE HOLE</title>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
   body {
     background: #0a1628;
     display: flex;
@@ -15,9 +21,11 @@
     min-height: 100vh;
     font-family: 'Noto Sans KR', sans-serif;
     user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
     cursor: none;
   }
-  canvas { display: block; cursor: none; }
+  canvas { display: block; cursor: none; touch-action: none; }
   #ui {
     position: fixed;
     top: 0; left: 0;
@@ -1826,12 +1834,16 @@ function loop(ts) {
 }
 
 // 마우스 이벤트
-canvas.addEventListener('mousemove', e => {
+// Pointer 이벤트로 마우스+터치 통합 (모바일 탭/홀드, 300ms 지연 제거)
+canvas.addEventListener('pointermove', e => {
   mouseX = e.clientX; mouseY = e.clientY;
 });
 
-canvas.addEventListener('mousedown', e => {
-  if (e.button !== 0) return;
+canvas.addEventListener('pointerdown', e => {
+  // 마우스는 좌클릭만, 터치/펜은 항상
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  e.preventDefault();
+  mouseX = e.clientX; mouseY = e.clientY;
   mouseDown = true;
   if (!gameActive) return;
 
@@ -1856,12 +1868,15 @@ canvas.addEventListener('mousedown', e => {
       showMsg('MISS!', '#000000', 1.0);
     }
   }
-});
+}, { passive: false });
 
-canvas.addEventListener('mouseup', e => {
-  if (e.button !== 0) return;
+function releasePointer(e) {
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
   mouseDown = false;
-});
+}
+canvas.addEventListener('pointerup', releasePointer);
+canvas.addEventListener('pointercancel', releasePointer);
+canvas.addEventListener('pointerleave', releasePointer);
 
 // 초기 렌더
 lastTime = performance.now();
