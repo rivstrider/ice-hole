@@ -677,13 +677,12 @@ async function initNicknameInput() {
   if (!current) {
     input.placeholder = 'Loading IP...';
     let ok = false;
-    // 1차: ipwho.is (IP + 국기 이모지 직접 제공)
+    // 1차: geojs (브라우저 CORS 지원, IP + 국가코드 제공)
     try {
-      const res = await fetch('https://ipwho.is/');
+      const res = await fetch('https://get.geojs.io/v1/ip/geo.json');
       const data = await res.json();
-      if (data && data.success !== false && data.ip) {
-        const flag = (data.flag && data.flag.emoji) || countryCodeToFlag(data.country_code || '');
-        localStorage.setItem('icehole_flag', flag);
+      if (data && data.ip) {
+        localStorage.setItem('icehole_flag', countryCodeToFlag(data.country_code || ''));
         current = data.ip;
         ok = true;
       }
