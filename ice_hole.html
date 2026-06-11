@@ -188,13 +188,14 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 24px;
+    gap: 16px;
     z-index: 100;
     overflow-y: auto;
-    padding: 32px 0;
+    padding: 20px;
     box-sizing: border-box;
   }
   #resultTitle {
+    flex-shrink: 0;
     font-family: 'Noto Sans KR', sans-serif;
     font-size: 42px;
     font-weight: 400;
@@ -205,9 +206,13 @@
   }
   #resultContainer {
     display: flex;
-    flex-direction: row;
-    align-items: flex-start;
+    flex-direction: column;
+    align-items: center;
     gap: 16px;
+    width: 440px;
+    max-width: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
   }
   #leaderboardPanel {
     display: flex;
@@ -216,8 +221,9 @@
     background: rgba(0,26,51,0.9);
     border: 1px solid rgba(168,216,240,0.18);
     border-radius: 12px;
-    width: 400px;
-    height: 480px;
+    width: 100%;
+    flex: 1 1 auto;
+    min-height: 140px;
     box-sizing: border-box;
     pointer-events: all;
   }
@@ -243,7 +249,7 @@
   .lb-header .lbh-score,
   .lb-header .lbh-catch,
   .lb-header .lbh-combo { text-align: center; }
-  #leaderboardList { display: flex; flex-direction: column; gap: 5px; flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(168,216,240,0.3) transparent; }
+  #leaderboardList { display: flex; flex-direction: column; gap: 5px; flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(168,216,240,0.3) transparent; }
   #leaderboardList::-webkit-scrollbar { width: 4px; }
   #leaderboardList::-webkit-scrollbar-track { background: transparent; }
   #leaderboardList::-webkit-scrollbar-thumb { background: rgba(168,216,240,0.3); border-radius: 2px; }
@@ -268,24 +274,25 @@
     background: rgba(0,26,51,0.9);
     border: 1px solid rgba(168,216,240,0.18);
     border-radius: 12px;
-    width: 320px;
-    height: 480px;
+    width: 100%;
+    flex-shrink: 0;
     box-sizing: border-box;
     pointer-events: all;
   }
-  #resultOverlay .result-score { font-family: 'Noto Sans KR', sans-serif; font-size: 80px; color: #ffffff; line-height: 1; margin-bottom: 28px; }
+  #resultOverlay .result-score { font-family: 'Noto Sans KR', sans-serif; font-size: 80px; color: #ffffff; line-height: 1; margin-bottom: 20px; }
   #resultOverlay .result-score-label { font-family: 'Noto Sans KR', sans-serif; font-size: 11px; color: #7aa8c4; letter-spacing: 2px; margin-bottom: 4px; }
   #resultOverlay .result-stats-row { display: flex; flex-direction: row; align-items: flex-start; justify-content: center; gap: 32px; width: 100%; margin-bottom: 4px; }
   #resultOverlay .result-stat { display: flex; flex-direction: column; align-items: center; gap: 4px; }
   #resultOverlay .result-stat-val { font-family: 'Noto Sans KR', sans-serif; font-size: 32px; color: #7aa8c4; line-height: 1; }
   #resultOverlay .result-stat-label { font-family: 'Noto Sans KR', sans-serif; font-size: 11px; color: #7aa8c4; letter-spacing: 2px; opacity: 0.6; }
   #resultOverlay .result-divider { width: 100%; height: 1px; background: rgba(168,216,240,0.12); margin: 12px 0; }
-  #resultOverlay .result-log { width: 100%; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; scrollbar-width: thin; scrollbar-color: rgba(168,216,240,0.3) transparent; }
+  #resultOverlay .result-log { width: 100%; height: 96px; flex: none; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; scrollbar-width: thin; scrollbar-color: rgba(168,216,240,0.3) transparent; }
   #resultOverlay .result-log::-webkit-scrollbar { width: 4px; }
   #resultOverlay .result-log::-webkit-scrollbar-track { background: transparent; }
   #resultOverlay .result-log::-webkit-scrollbar-thumb { background: rgba(168,216,240,0.3); border-radius: 2px; }
   #resultOverlay .result-log-item { font-family: 'Noto Sans KR', sans-serif; font-size: 16px; font-weight: 400; color: rgba(168,216,240,0.85); }
   #resultPlayAgain {
+    flex-shrink: 0;
     width: 320px;
     height: 64px;
     padding: 0;
