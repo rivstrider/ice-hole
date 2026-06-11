@@ -386,7 +386,8 @@ function resize() {
 }
 let SCALE = 1;
 resize();
-window.addEventListener('resize', resize);
+// 리사이즈 시 캔버스가 지워지므로, 게임 루프가 안 돌 때는 직접 다시 그린다
+window.addEventListener('resize', () => { resize(); if (!gameActive) draw(); });
 
 // --- 이미지 에셋 ---
 const IMG = {};
