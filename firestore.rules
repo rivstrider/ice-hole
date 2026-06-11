@@ -1,0 +1,40 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /leaderboard/{docId} {
+
+      // 리더보드는 누구나 읽기 가능 (공개)
+      allow read: if true;
+
+      // 생성: 필드 구성과 값 범위가 올바를 때만 (쓰레기 데이터/악성 주입 차단)
+      allow create: if request.resource.data.keys().hasOnly(
+                        ['name','score','catches','maxCombo','playerId','flag','timestamp'])
+                    && request.resource.data.name is string
+                    && request.resource.data.name.size() >= 1
+                    && request.resource.data.name.size() <= 30
+                    && request.resource.data.score is number
+                    && request.resource.data.score >= 0
+                    && request.resource.data.score <= 1000000
+                    && request.resource.data.catches is number
+                    && request.resource.data.catches >= 0
+                    && request.resource.data.catches <= 100000
+                    && request.resource.data.maxCombo is number
+                    && request.resource.data.maxCombo >= 0
+                    && request.resource.data.maxCombo <= 100000
+                    && request.resource.data.playerId is string
+                    && request.resource.data.playerId.size() <= 100
+                    && request.resource.data.flag is string
+                    && request.resource.data.flag.size() <= 16;
+
+      // 수정: 닉네임(name)만 변경 가능, 나머지 필드는 불변
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name'])
+                    && request.resource.data.name is string
+                    && request.resource.data.name.size() >= 1
+                    && request.resource.data.name.size() <= 30;
+
+      // 삭제 금지
+      allow delete: if false;
+    }
+  }
+}

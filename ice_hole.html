@@ -1,0 +1,1879 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ICE HOLE</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a1628;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'Noto Sans KR', sans-serif;
+    user-select: none;
+    cursor: none;
+  }
+  canvas { display: block; cursor: none; }
+  #ui {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+  }
+  #titleOverlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: transparent;
+    cursor: default;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 100px;
+    z-index: 100;
+  }
+  #titleControls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    pointer-events: all;
+    width: 320px;
+  }
+  #nicknameArea {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    gap: 6px;
+  }
+  #nicknameLabel {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 11px;
+    font-weight: 400;
+    color: #ffffff;
+    letter-spacing: 2px;
+  }
+  #nicknameInputWrap {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    background: rgba(0,26,51,0.9);
+    border: 1px solid rgba(168,216,240,0.25);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  #nicknameInputInner {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: 0 10px 0 30px;
+    gap: 5px;
+    min-width: 0;
+    border-right: 1px solid rgba(168,216,240,0.15);
+  }
+  #titleNicknameInput {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 15px;
+    padding: 10px 0;
+    outline: none;
+    text-align: center;
+    min-width: 0;
+  }
+  #titleNicknameInput::placeholder { color: rgba(168,216,240,0.3); }
+  #nicknameChangeBtn {
+    flex-shrink: 0;
+    width: 72px;
+    padding: 0;
+    height: 42px;
+    background: transparent;
+    border: none;
+    color: rgba(168,216,240,0.6);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 13px;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  #nicknameChangeBtn:hover:not(:disabled) { color: #a8d8f0; background: rgba(168,216,240,0.08); }
+  #nicknameChangeBtn:disabled { opacity: 0.25; cursor: default; }
+  #startBtn {
+    width: 320px;
+    height: 64px;
+    padding: 0;
+    background: rgba(57,172,229,0.9);
+    border: 1px solid #a8d8f0;
+    color: #ffffff;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 20px;
+    letter-spacing: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    pointer-events: all;
+  }
+  #startBtn:hover { background: #ffffff; color: rgba(57,172,229,0.9); }
+  #lbOverlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,26,51,0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    cursor: default;
+  }
+  #lbPopup {
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    background: rgba(0,26,51,0.9);
+    border: 1px solid rgba(168,216,240,0.18);
+    border-radius: 12px;
+    width: 400px;
+    height: 480px;
+    box-sizing: border-box;
+    pointer-events: all;
+    position: relative;
+  }
+  #lbPopupClose {
+    position: absolute;
+    top: 14px; right: 18px;
+    background: transparent;
+    border: none;
+    color: rgba(168,216,240,0.5);
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px;
+    transition: color 0.2s;
+  }
+  #lbPopupClose:hover { color: #a8d8f0; }
+  #lbViewBtn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 160px;
+    height: 48px;
+    background: rgba(0,26,51,0.9);
+    border: 1px solid rgba(168,216,240,0.3);
+    color: rgba(168,216,240,0.8);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 15px;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    pointer-events: all;
+    z-index: 101;
+  }
+  #lbViewBtn:hover { background: rgba(0,26,51,0.9); color: #a8d8f0; }
+  #resultOverlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,26,51,0.7);
+    cursor: default;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    z-index: 100;
+    overflow-y: auto;
+    padding: 32px 0;
+    box-sizing: border-box;
+  }
+  #resultTitle {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 42px;
+    font-weight: 400;
+    color: #ffffff;
+    letter-spacing: 10px;
+    text-align: center;
+    pointer-events: none;
+  }
+  #resultContainer {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  #leaderboardPanel {
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    background: rgba(0,26,51,0.9);
+    border: 1px solid rgba(168,216,240,0.18);
+    border-radius: 12px;
+    width: 400px;
+    height: 480px;
+    box-sizing: border-box;
+    pointer-events: all;
+  }
+  .lb-title { font-family: 'Noto Sans KR', sans-serif; font-size: 13px; font-weight: 400; color: #7aa8c4; letter-spacing: 4px; margin-bottom: 14px; }
+  /* leaderboard grid — header and rows share identical column template */
+  .lb-header,
+  .lb-item {
+    display: grid;
+    grid-template-columns: 46px 26px minmax(0,110px) 56px 44px 56px;
+    align-items: center;
+    gap: 0;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+  .lb-header {
+    font-size: 11px;
+    color: #7aa8c4;
+    letter-spacing: 1px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(168,216,240,0.18);
+    margin-bottom: 6px;
+  }
+  .lb-header > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lb-header .lbh-score,
+  .lb-header .lbh-catch,
+  .lb-header .lbh-combo { text-align: center; }
+  #leaderboardList { display: flex; flex-direction: column; gap: 5px; flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(168,216,240,0.3) transparent; }
+  #leaderboardList::-webkit-scrollbar { width: 4px; }
+  #leaderboardList::-webkit-scrollbar-track { background: transparent; }
+  #leaderboardList::-webkit-scrollbar-thumb { background: rgba(168,216,240,0.3); border-radius: 2px; }
+  .lb-item { font-size: 14px; font-weight: 400; color: rgba(168,216,240,0.85); }
+  .lb-item.lb-me { color: #ffffff; }
+  .lb-rank { font-size: 13px; color: #7aa8c4; text-align: center; }
+  .lb-flag { text-align: center; }
+  .lb-item.lb-me .lb-rank { color: #a8d8f0; }
+  .lb-rank.gold { color: #f0c040; }
+  .lb-rank.silver { color: #c0c8d0; }
+  .lb-rank.bronze { color: #c09060; }
+  .lb-flag { font-size: 14px; }
+  .lb-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 8px; }
+  .lb-score { font-size: 14px; color: #ffffff; text-align: center; white-space: nowrap; }
+  .lb-catches { font-size: 12px; color: #7aa8c4; text-align: center; white-space: nowrap; }
+  .lb-combo { font-size: 12px; color: #7aa8c4; text-align: center; white-space: nowrap; }
+  #resultPanel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px;
+    background: rgba(0,26,51,0.9);
+    border: 1px solid rgba(168,216,240,0.18);
+    border-radius: 12px;
+    width: 320px;
+    height: 480px;
+    box-sizing: border-box;
+    pointer-events: all;
+  }
+  #resultOverlay .result-score { font-family: 'Noto Sans KR', sans-serif; font-size: 80px; color: #ffffff; line-height: 1; margin-bottom: 28px; }
+  #resultOverlay .result-score-label { font-family: 'Noto Sans KR', sans-serif; font-size: 11px; color: #7aa8c4; letter-spacing: 2px; margin-bottom: 4px; }
+  #resultOverlay .result-stats-row { display: flex; flex-direction: row; align-items: flex-start; justify-content: center; gap: 32px; width: 100%; margin-bottom: 4px; }
+  #resultOverlay .result-stat { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  #resultOverlay .result-stat-val { font-family: 'Noto Sans KR', sans-serif; font-size: 32px; color: #7aa8c4; line-height: 1; }
+  #resultOverlay .result-stat-label { font-family: 'Noto Sans KR', sans-serif; font-size: 11px; color: #7aa8c4; letter-spacing: 2px; opacity: 0.6; }
+  #resultOverlay .result-divider { width: 100%; height: 1px; background: rgba(168,216,240,0.12); margin: 12px 0; }
+  #resultOverlay .result-log { width: 100%; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; scrollbar-width: thin; scrollbar-color: rgba(168,216,240,0.3) transparent; }
+  #resultOverlay .result-log::-webkit-scrollbar { width: 4px; }
+  #resultOverlay .result-log::-webkit-scrollbar-track { background: transparent; }
+  #resultOverlay .result-log::-webkit-scrollbar-thumb { background: rgba(168,216,240,0.3); border-radius: 2px; }
+  #resultOverlay .result-log-item { font-family: 'Noto Sans KR', sans-serif; font-size: 16px; font-weight: 400; color: rgba(168,216,240,0.85); }
+  #resultPlayAgain {
+    width: 320px;
+    height: 64px;
+    padding: 0;
+    background: rgba(57,172,229,0.9);
+    border: 1px solid #a8d8f0;
+    color: #ffffff;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 20px;
+    letter-spacing: 4px;
+    cursor: pointer;
+    pointer-events: all;
+    transition: all 0.2s;
+  }
+  #resultPlayAgain:hover { background: #ffffff; color: rgba(57,172,229,0.9); }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="titleOverlay">
+  <button id="lbViewBtn" onclick="openLbPopup()">LEADERBOARD</button>
+  <div id="titleControls">
+    <div id="nicknameArea">
+      <span id="nicknameLabel">NICKNAME</span>
+      <div id="nicknameInputWrap">
+        <div id="nicknameInputInner">
+          <span id="titleFlag" style="font-size:16px;line-height:1;pointer-events:none;user-select:none;"></span>
+          <input id="titleNicknameInput" type="text" maxlength="15" placeholder="Loading..." />
+        </div>
+        <button id="nicknameChangeBtn" disabled onclick="applyNicknameChange()">CHANGE</button>
+      </div>
+    </div>
+    <button id="startBtn" onclick="startGame()">DROP IN</button>
+  </div>
+</div>
+
+<div id="lbOverlay" onclick="if(event.target===this)closeLbPopup()">
+  <div id="lbPopup">
+    <button id="lbPopupClose" onclick="closeLbPopup()">✕</button>
+    <div class="lb-title">LEADERBOARD</div>
+    <div class="lb-header">
+      <span class="lbh-rank" style="text-align:center">RANK</span>
+      <span class="lbh-flag" style="text-align:center"></span>
+      <span class="lbh-name">NICKNAME</span>
+      <span class="lbh-score">SCORE</span>
+      <span class="lbh-catch">FISH</span>
+      <span class="lbh-combo">COMBO</span>
+    </div>
+    <div id="lbPopupList"><div style="color:rgba(168,216,240,0.3);font-size:13px;font-family:'Noto Sans KR'">Loading...</div></div>
+  </div>
+</div>
+
+<div id="resultOverlay">
+  <div id="resultTitle">TIME UP</div>
+  <div id="resultContainer">
+    <div id="resultPanel">
+      <div class="result-score-label">SCORE</div>
+      <div class="result-score"><span id="finalScore">0</span></div>
+      <div class="result-stats-row">
+        <div class="result-stat">
+          <div class="result-stat-label">FISH</div>
+          <div class="result-stat-val" id="finalCatch">0</div>
+        </div>
+        <div class="result-stat">
+          <div class="result-stat-label">MAX COMBO</div>
+          <div class="result-stat-val" id="finalCombo">0x</div>
+        </div>
+      </div>
+      <div class="result-divider"></div>
+      <div class="result-log" id="finalLog"></div>
+    </div>
+    <div id="leaderboardPanel">
+      <div class="lb-title">LEADERBOARD</div>
+      <div class="lb-header">
+        <span class="lbh-rank" style="text-align:center">RANK</span>
+        <span class="lbh-flag" style="text-align:center"></span>
+        <span class="lbh-name">NICKNAME</span>
+        <span class="lbh-score">SCORE</span>
+        <span class="lbh-catch">FISH</span>
+        <span class="lbh-combo">COMBO</span>
+      </div>
+      <div id="leaderboardList"><div style="color:rgba(168,216,240,0.3);font-size:13px;font-family:'Noto Sans KR'">Loading...</div></div>
+    </div>
+  </div>
+  <button id="resultPlayAgain" onclick="startGame()">PLAY AGAIN</button>
+</div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+let W, H;
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+  // 세로 기준 스케일 계산 (1920x1080 기준)
+  SCALE = H / 1080;
+}
+let SCALE = 1;
+resize();
+window.addEventListener('resize', resize);
+
+// --- 이미지 에셋 ---
+const IMG = {};
+const IMG_PATHS = {
+  bg_intro:     'assets/bg_intro.png',
+  bg_ice:       'assets/bg_ice.png',
+  overlay_hole: 'assets/overlay_hole.png',
+  fg_ice:       'assets/fg_ice.png',
+  float:        'assets/float.png',
+  icon_fish:    'assets/icon_fish.png',
+  icon_hook:    'assets/icon_hook.png',
+  icon_angler:  'assets/icon_angler.png',
+  fish1:        'assets/fish1.png',
+};
+
+(function loadImages() {
+  for (const [key, path] of Object.entries(IMG_PATHS)) {
+    const img = new Image();
+    img.src = path;
+    IMG[key] = img;
+  }
+})();
+
+// 이미지가 로드 완료되어 사용 가능한지 확인
+function imgReady(key) {
+  const img = IMG[key];
+  return img && img.complete && img.naturalWidth > 0;
+}
+
+// 세로 기준 fit (종횡비 유지, 가로 중앙 정렬)
+function drawFitV(img) {
+  const scale = H / img.naturalHeight;
+  const dw = img.naturalWidth * scale;
+  ctx.drawImage(img, (W - dw) / 2, 0, dw, H);
+}
+
+// --- 게임 상태 ---
+// FAIL: 낚싯줄 끊김/물고기 탈출 (결과화면과 별개 — 결과화면은 gameActive=false 로 판별)
+const STATE = { IDLE:0, CASTING:1, WAITING:2, BITE:3, HOOKSET:4, FIGHTING:5, LANDING:6, FAIL:7 };
+let state = STATE.IDLE;
+let gameActive = false;
+let timeLeft = 90;
+let totalScore = 0;
+let bestScore = 0;
+let catchCount = 0;
+let combo = 0;
+let maxCombo = 0;
+let comboTimer = 0; // 콤보 타임아웃 타이머
+// 콤보 메시지 애니메이션
+let comboMsg = {
+  active: false,
+  count: 0,
+  y: 0,       // 현재 y 위치
+  targetY: 0, // 정착 y 위치
+  alpha: 0,
+  phase: 'idle', // 'enter' | 'hold' | 'exit'
+  timer: 0,
+};
+let lastTime = 0;
+
+// 라인
+let lineLength = 0;
+let lineTension = 0;
+const depth = 200;
+const reelRetrieve = 250;
+
+// 찌
+let floatDive = 0;
+let floatY = 0; // 기본 수면 위치
+let floatBobOffset = 0;
+let floatBobTimer = 0;
+
+// 입질
+let biteRate = 1.5;
+let biteTimer = 0;
+let biteCooldown = 0;
+let currentBiteType = null;
+let biteProgress = 0;
+let biteDuration = 0;
+
+// 물고기
+let fish = null;
+let currentPower = 0;
+let burstTimer = 0;
+let isBursting = false;
+let burstDuration = 0;
+let peakTension = 0;    // 텐션 피크값 추적
+let lowTensionTimer = 0; // 텐션 저하 지속 타이머
+let highTensionTimer = 0; // 텐션 초과 지속 타이머
+let tensionFlash = 0; // 버스트 시 텐션 게이지 번쩍 (0~1)
+
+// 마우스
+let mouseX = 0, mouseY = 0;
+let mouseDown = false;
+
+// 메시지
+let msg = '';
+let msgTimer = 0;
+let msgColor = '#000000';
+let ptPopups = []; // +XXpt 팝업 목록
+
+// 잡은 물고기 목록
+let catchLog = [];
+
+// 물방울 파티클
+let particles = [];
+// 잡힌 물고기 목록 (얼음 위에 쌓임)
+let caughtFishList = []; // { x, y, rot, scale, vx, vy, vrot, settled }
+// 수면 파문
+let ripples = [];
+let lastFloatDive = 0; // 파문 생성 트리거용
+
+// 찌 바운스 (수면 귀환 시 스프링)
+let floatBounce = 0;     // 현재 바운스 오프셋 (음수 = 수면 위)
+let floatBounceVel = 0;  // 바운스 속도
+let floatTiltAngle = 5 * Math.PI / 180;  // 현재 tilt (수면=5°, 다이브=0°)
+let prevBiteDive = 0;    // 이전 프레임 floatDive (트리거 감지용)
+let floatWiggleX = 0;    // FIGHTING 중 좌우 위글 오프셋 (world px)
+let floatWiggleVel = 0;  // 위글 속도
+let floatWiggleT = 0;    // 위글 타이머 (불규칙 킥 용)
+let floatDriftX = 0;     // 물고기가 끌어당기는 드리프트 중심 오프셋
+let floatDriftTarget = 0;// 드리프트 목표
+let floatDriftTimer = 0; // 다음 목표까지 남은 시간
+
+// 캐스팅 애니메이션
+let castProgress = 0; // 0→1
+let castDipProgress = 0; // 입수 애니메이션 (0→1), 0.3초
+
+function showComboMsg(count) {
+  comboMsg.active = true;
+  comboMsg.count = count;
+  comboMsg.phase = 'enter';
+  comboMsg.timer = 0;
+  comboMsg.alpha = 0;
+}
+
+function hideComboMsg() {
+  if (comboMsg.active && comboMsg.phase !== 'exit') {
+    comboMsg.phase = 'exit';
+    comboMsg.timer = 0;
+  }
+}
+
+function showMsg(text, color='#000000', duration=1.2) {
+  msg = text; msgTimer = duration; msgColor = color;
+}
+
+function spawnPtPopup(text, x, y) {
+  ptPopups.push({ text, x, y, t: 0, duration: 1.6 });
+}
+
+function spawnFish() {
+  const w = parseFloat((0.5 + Math.random() * 3.5).toFixed(2));
+  fish = {
+    name: 'Fish',
+    fishWeight: w,
+    fishStamina: 1.0,
+    lastGaspFired: false,
+  };
+  burstTimer = 2.5 + Math.random() * 2.0;
+  isBursting = false;
+}
+
+function addParticles(x, y, count=8, color='#a8d8f0') {
+  for (let i = 0; i < count; i++) {
+    particles.push({
+      x, y,
+      vx: (Math.random()-0.5)*4,
+      vy: -Math.random()*3-1,
+      life: 1.0,
+      color,
+      size: Math.random()*4+2,
+    });
+  }
+}
+
+function spawnCaughtFish(holeX, holeY) {
+  // 구멍 위쪽 반원 방향 (angle: π ~ 2π, 즉 위쪽)
+  const angle = Math.PI + Math.random() * Math.PI;
+  // 12시(위)=250~300, 3/9시(옆)=400~600 — |cos(angle)|로 보간
+  const t = Math.abs(Math.cos(angle)); // 0=12시, 1=3/9시
+  const minDist = 200 + 200 * t;        // 200 ~ 400
+  const maxDist = 220 + 380 * t;        // 220 ~ 600
+  const rawDist = minDist + Math.random() * (maxDist - minDist);
+  const dist = rawDist; // 고정 픽셀, SCALE 없음
+  // 원근감 기반 스케일: 수직(깊이)+수평 성분 합산
+  // 12시 최대 → 0.75 / 3/9시 최대 → 0.90
+  const depthDist = rawDist * Math.abs(Math.sin(angle));  // 수직(깊이) 성분
+  const horizDist = rawDist * Math.abs(Math.cos(angle));  // 수평 성분
+  const depthRatio = Math.min(1, depthDist / 220);        // 12시 기준 max 220
+  const horizRatio = Math.min(1, horizDist / 600);        // 3/9시 기준 max 600
+  // 기준값: 12시=0.95, 3/9시=1.0 (t로 보간)
+  // 기준값: 12시=0.95, 3/9시=1.0 (t로 보간)
+  const baseScale = 0.95 + 0.05 * t;
+  // 최대 감소: 12시→0.75(감소 0.20), 3/9시→0.95(감소 0.05)
+  const fishScale = baseScale - 0.20 * depthRatio - 0.05 * horizRatio;
+  // 초기 속도: 목표 거리를 0.12초 안에 도달하는 강한 임펄스
+  const spd = dist / 0.12;
+  caughtFishList.push({
+    x: 0, y: 0,  // 구멍 기준 상대 좌표
+    vx: Math.cos(angle) * spd,
+    vy: Math.sin(angle) * spd,
+    curRot: 0,
+    // y가 가까울수록(depthRatio=0) ±40°, 멀어질수록(depthRatio=1) ±5°
+    finalRot: (Math.random() - 0.5) * 2 * ((40 - 35 * depthRatio) * Math.PI / 180),
+    // 좌우 반전: 12시~3시 방향(angle>3π/2)=40%, 12시~9시 방향=60%
+    flipX: Math.random() < (angle > Math.PI * 1.5 ? 0.40 : 0.60),
+    scale: fishScale,
+    coasting: false,
+    settled: false,
+    alpha: 1,
+  });
+}
+
+function addRipple(holeX, holeY, lineWidth=2) {
+  ripples.push({ x: holeX, y: holeY, life: 1.0, lineWidth });
+}
+
+function startGame() {
+  document.getElementById('titleOverlay').style.display = 'none';
+  document.getElementById('resultOverlay').style.display = 'none';
+  gameActive = true;
+  timeLeft = 90;
+  totalScore = 0;
+  catchCount = 0;
+  combo = 0;
+  maxCombo = 0;
+  comboTimer = 0;
+  comboMsg = { active: false, count: 0, y: 0, targetY: 0, alpha: 0, phase: 'idle', timer: 0 };
+  lineLength = 0;
+  lineTension = 0;
+  peakTension = 0;
+  lowTensionTimer = 0;
+  highTensionTimer = 0;
+  floatDive = 0;
+  floatBounce = 0;
+  floatBounceVel = 0;
+  prevBiteDive = 0;
+  floatWiggleX = 0;
+  floatWiggleVel = 0;
+  floatWiggleT = 0;
+  floatDriftX = 0;
+  floatDriftTarget = 0;
+  floatDriftTimer = 0;
+  fish = null;
+  particles = [];
+  ripples = [];
+  caughtFishList = [];
+  lastFloatDive = 0;
+  catchLog = [];
+  ptPopups = [];
+  biteTimer = 2.0;
+  biteCooldown = 0;
+  castProgress = 0;
+  state = STATE.CASTING;
+
+  requestAnimationFrame(loop);
+}
+
+// ── 닉네임 / 플레이어ID 관리 ──
+function getPlayerId() {
+  let id = localStorage.getItem('icehole_pid');
+  if (!id) {
+    id = Math.random().toString(36).slice(2, 8).toUpperCase() +
+         Math.random().toString(36).slice(2, 6).toUpperCase();
+    localStorage.setItem('icehole_pid', id);
+  }
+  return id;
+}
+function getSavedNickname() {
+  return localStorage.getItem('icehole_nick') || '';
+}
+function saveNickname(name) {
+  localStorage.setItem('icehole_nick', name);
+}
+
+// 타이틀 닉네임 인풋 초기화
+// 사용자가 직접 변경한 경우(icehole_nick_custom=1)만 저장값 사용, 아니면 항상 공개 IP
+let _defaultIp = '';
+
+async function initNicknameInput() {
+  const input = document.getElementById('titleNicknameInput');
+  const btn = document.getElementById('nicknameChangeBtn');
+
+  const isCustom = localStorage.getItem('icehole_nick_custom') === '1';
+  let current = isCustom ? getSavedNickname() : '';
+
+  if (!current) {
+    input.placeholder = 'Loading IP...';
+    try {
+      // HTTPS 지원 무료 IP 조회 (호스팅 시 혼합 콘텐츠 차단 방지)
+      const res = await fetch('https://ipwho.is/');
+      const data = await res.json();
+      const flag = countryCodeToFlag(data.country_code || '');
+      localStorage.setItem('icehole_flag', flag);
+      current = data.ip || getPlayerId();
+    } catch(e) {
+      localStorage.setItem('icehole_flag', '');
+      current = getPlayerId();
+    }
+    saveNickname(current);
+  }
+
+  _defaultIp = localStorage.getItem('icehole_nick') || current;
+  input.value = current;
+  input.placeholder = _defaultIp;
+  document.getElementById('titleFlag').textContent = getFlag();
+  input.addEventListener('input', () => {
+    btn.disabled = input.value.trim() === getSavedNickname();
+  });
+}
+
+function countryCodeToFlag(code) {
+  if (!code || code.length !== 2) return '';
+  return [...code.toUpperCase()].map(c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65)).join('');
+}
+
+function getFlag() {
+  return localStorage.getItem('icehole_flag') || '';
+}
+
+function applyNicknameChange() {
+  const input = document.getElementById('titleNicknameInput');
+  const btn = document.getElementById('nicknameChangeBtn');
+  let name = input.value.trim();
+  if (!name) {
+    // 빈값이면 공용 IP(기본값) 사용
+    name = _defaultIp || getSavedNickname();
+    input.value = name;
+  }
+  saveNickname(name);
+  localStorage.setItem('icehole_nick_custom', '1');
+  btn.disabled = true;
+}
+
+function renderLeaderboardRows(listEl, entries, highlightId) {
+  listEl.innerHTML = '';
+  if (entries.length === 0) {
+    listEl.innerHTML = '<div style="color:rgba(168,216,240,0.3);font-size:13px;font-family:\'Noto Sans KR\'">No records yet</div>';
+    return;
+  }
+  const medals = ['🥇','🥈','🥉'];
+  entries.forEach((e, i) => {
+    const row = document.createElement('div');
+    row.className = 'lb-item' + (e.id === highlightId ? ' lb-me' : '');
+    const rankClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+    row.innerHTML = `
+      <span class="lb-rank ${rankClass}">${i < 3 ? medals[i] : (i+1)}</span>
+      <span class="lb-flag">${e.flag || ''}</span>
+      <span class="lb-name">${e.name}</span>
+      <span class="lb-score">${e.score}</span>
+      <span class="lb-catches">${e.catches}</span>
+      <span class="lb-combo">${e.maxCombo > 1 ? e.maxCombo + 'x' : '-'}</span>
+    `;
+    listEl.appendChild(row);
+  });
+}
+
+async function openLbPopup() {
+  const overlay = document.getElementById('lbOverlay');
+  const listEl = document.getElementById('lbPopupList');
+  overlay.style.display = 'flex';
+  listEl.innerHTML = '<div style="color:rgba(168,216,240,0.3);font-size:13px;font-family:\'Noto Sans KR\'">Loading...</div>';
+  if (!window.fetchLeaderboard) {
+    listEl.innerHTML = '<div style="color:rgba(168,216,240,0.3);font-size:13px;font-family:\'Noto Sans KR\'">Connecting...</div>';
+    return;
+  }
+  const entries = await window.fetchLeaderboard();
+  renderLeaderboardRows(listEl, entries, null);
+}
+
+function closeLbPopup() {
+  document.getElementById('lbOverlay').style.display = 'none';
+}
+
+// 페이지 로드 시 실행
+initNicknameInput();
+
+let _lastDocId = null; // 이번 게임에서 제출한 doc ID
+
+// 타임아웃 → 결과 화면 표시
+function endGame() {
+  gameActive = false;
+  document.getElementById('finalScore').textContent = totalScore;
+  document.getElementById('finalCatch').textContent = catchCount;
+  document.getElementById('finalCombo').textContent = `${maxCombo}x`;
+
+  // 전체 포획 로그 생성
+  const logEl = document.getElementById('finalLog');
+  logEl.innerHTML = '';
+  catchLog.forEach((c, i) => {
+    const num = catchLog.length - i;
+    const comboStr = c.combo > 1 ? `, ${c.combo}x Combo` : '';
+    const div = document.createElement('div');
+    div.className = 'result-log-item';
+    div.textContent = `FISH ${num}: ${c.pt}  (${c.w.toFixed(1)}kg${comboStr})`;
+    logEl.appendChild(div);
+  });
+
+  document.getElementById('resultOverlay').style.display = 'flex';
+
+  // 자동 등록
+  _lastDocId = null;
+  autoSubmit();
+}
+
+async function autoSubmit() {
+  if (!window.saveScoreToFirebase) {
+    setTimeout(autoSubmit, 500);
+    return;
+  }
+  const nickname = getSavedNickname();
+  const flag = getFlag();
+  try {
+    _lastDocId = await window.saveScoreToFirebase(nickname, totalScore, catchCount, maxCombo, getPlayerId(), flag);
+    loadLeaderboard(_lastDocId);
+  } catch(e) {
+    loadLeaderboard();
+  }
+}
+
+async function loadLeaderboard(highlightId) {
+  const listEl = document.getElementById('leaderboardList');
+  listEl.innerHTML = '<div style="color:rgba(168,216,240,0.3);font-size:13px;font-family:\'Noto Sans KR\'">Loading...</div>';
+  if (!window.fetchLeaderboard) {
+    listEl.innerHTML = '<div style="color:rgba(168,216,240,0.3);font-size:13px;font-family:\'Noto Sans KR\'">Connecting...</div>';
+    return;
+  }
+  const entries = await window.fetchLeaderboard();
+  renderLeaderboardRows(listEl, entries, highlightId);
+}
+
+
+// 떠오르는 중 여부 (이 동안 훅셋 불가)
+let biteRising = false;
+let biteParams = {};
+
+// ── 입질 패턴 3종 ──────────────────────────────────────
+// NIBBLE(50%): 2-5회 깔짝, 깊이 3-10px, 속도 0.1-0.2초, 간격 0.1-0.5초, 쿨다운 0초
+// FAKE(25%):   단발 다이브, 깊이 3-18px, 속도 0.2-0.8초, 쿨다운 0.5-1.0초
+// SUDDEN_DIVE(25%): 단발 다이브, 깊이 20-100px, 속도 0.2-0.8초, 쿨다운 0.5-1.0초
+
+function startBite() {
+  const r = Math.random() * 100;
+  currentBiteType = r < 25 ? 'NIBBLE' : r < 50 ? 'FAKE' : 'SUDDEN_DIVE';
+  biteProgress = 0;
+  floatDive = 0;
+  biteRising = false;
+
+  if (currentBiteType === 'NIBBLE') {
+    // 각 다이브: sin 반주기, 깊이 3-10px, 속도 100px당 0.15-0.2초, 간격 0.15-0.5초
+    const count = 2 + Math.floor(Math.random() * 4);
+    const pulses = [];
+    for (let i = 0; i < count; i++) {
+      const depth = 3 + Math.random() * 7;
+      const diveSpeed = 0.15 + Math.random() * 0.05; // 100px당 이동시간(초)
+      pulses.push({
+        depth,
+        duration: depth * diveSpeed / 100 * 2, // sin 반주기 = 내려갔다 올라옴
+        gap: 0.15 + Math.random() * 0.35,
+      });
+    }
+    let total = 0;
+    for (const p of pulses) total += p.duration + p.gap;
+    biteParams = { pulses, total };
+
+  } else {
+    // FAKE, SUDDEN_DIVE 공통: 잠기기 → 떠오르기
+    const maxDepth = currentBiteType === 'FAKE'
+      ? 3  + Math.random() * 13   // 3-16px (훅셋 불가)
+      : 20 + Math.random() * 80;  // 20-100px
+    const diveSpeed = currentBiteType === 'FAKE'
+      ? 0.25 + Math.random() * 0.55  // 100px당 0.25-0.8초
+      : 0.25 + Math.random() * 0.55; // 100px당 0.25-0.8초
+    const diveTime = maxDepth * diveSpeed / 100;
+    const holdTime = currentBiteType === 'SUDDEN_DIVE' ? 0.2 : 0;
+    const riseTime = Math.max(maxDepth / 150, 0.5); // 150px/초, 최소 0.5초 보장
+    biteParams = { maxDepth, diveTime, holdTime, riseTime };
+  }
+
+  state = STATE.BITE;
+}
+
+function updateBite(dt) {
+  biteProgress += dt;
+
+  if (currentBiteType === 'NIBBLE') {
+    let t = 0, val = 0;
+    for (const p of biteParams.pulses) {
+      if (biteProgress < t + p.duration) {
+        val = Math.sin(((biteProgress - t) / p.duration) * Math.PI) * p.depth;
+        break;
+      }
+      t += p.duration;
+      if (biteProgress < t + p.gap) break;
+      t += p.gap;
+    }
+    floatDive = Math.max(0, val);
+    if (biteProgress >= biteParams.total) {
+      const lastDepth = biteParams.pulses[biteParams.pulses.length - 1].depth;
+      if (lastDepth > 4) {
+        const bh = Math.min(lastDepth * 0.14, 10);
+        floatBounce = 0; floatBounceVel = -bh * 8; // 수면에서 위로 솟구침
+      }
+      floatDive = 0;
+      biteRising = false;
+      state = STATE.WAITING;
+      biteCooldown = 0;
+    }
+
+  } else {
+    // FAKE, SUDDEN_DIVE 공통
+    const { maxDepth, diveTime, holdTime, riseTime } = biteParams;
+    if (biteProgress < diveTime) {
+      // 다이브: easeOut (1-(1-t)^2) — 빠르게 내려가다 홀드 직전 부드럽게 감속
+      const t = biteProgress / diveTime;
+      floatDive = (1 - (1 - t) * (1 - t)) * maxDepth;
+      biteRising = false;
+    } else if (biteProgress < diveTime + holdTime) {
+      floatDive = maxDepth;
+      biteRising = false;
+    } else if (biteProgress < diveTime + holdTime + riseTime) {
+      // 라이즈: easeIn (t^2) — 천천히 시작해서 빠르게 떠오름
+      biteRising = true;
+      const t = (biteProgress - diveTime - holdTime) / riseTime;
+      floatDive = maxDepth * (1 - t * t);
+    } else {
+      if (biteParams.maxDepth > 8) {
+        const bh = Math.min(biteParams.maxDepth * 0.14, 10);
+        floatBounce = 0; floatBounceVel = -bh * 8; // 수면에서 위로 솟구침
+      }
+      floatDive = 0;
+      biteRising = false;
+      state = STATE.WAITING;
+      biteCooldown = 0.5 + Math.random() * 0.5;
+    }
+  }
+}
+
+function update(dt) {
+  if (!gameActive) return;
+
+  // 타이머
+  timeLeft -= dt;
+  if (timeLeft <= 0) { timeLeft = 0; endGame(); return; }
+
+  // 메시지 타이머
+  if (msgTimer > 0) msgTimer -= dt;
+  for (const p of ptPopups) p.t += dt;
+  ptPopups = ptPopups.filter(p => p.t < p.duration);
+
+  // 콤보 타임아웃 (파이팅 중에는 타이머 정지)
+  if (combo > 0 && comboTimer > 0) {
+    comboTimer -= dt;
+    if (comboTimer <= 0) { combo = 0; comboTimer = 0; hideComboMsg(); }
+  }
+
+  // 콤보 메시지 애니메이션 업데이트 (파이팅 중 hold 타이머 정지)
+  if (comboMsg.active) {
+    const _holeY = H - 400 * SCALE;
+    const baseY = _holeY - 160;
+    if (comboMsg.phase === 'enter') {
+      // 아래에서 위로 빠르게 등장 (0.2초)
+      comboMsg.timer += dt;
+      const t = Math.min(comboMsg.timer / 0.1, 1);
+      comboMsg.y = baseY + 40 * (1 - t);
+      comboMsg.alpha = t;
+      if (t >= 1) { comboMsg.phase = 'hold'; comboMsg.timer = 0; }
+    } else if (comboMsg.phase === 'hold') {
+      // 파이팅 중엔 타이머 정지, 그 외엔 10초에 걸쳐 사라짐
+      comboMsg.timer += dt;
+      const t = Math.min(comboMsg.timer / 12.0, 1);
+      comboMsg.y = baseY - 30 * t;
+      comboMsg.alpha = 1 - t * 0.8;
+      if (t >= 1) { comboMsg.active = false; comboMsg.phase = 'idle'; }
+    } else if (comboMsg.phase === 'exit') {
+      // 콤보 해제 시 빠르게 사라짐 (0.15초)
+      comboMsg.timer += dt;
+      const t = Math.min(comboMsg.timer / 0.15, 1);
+      comboMsg.alpha = 1 - t;
+      if (t >= 1) { comboMsg.active = false; comboMsg.phase = 'idle'; }
+    }
+  }
+
+  // 파티클
+  for (let i = particles.length-1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx; p.y += p.vy; p.vy += 0.1; p.life -= dt*1.5;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+
+  // holeX, waterY 고정값
+  const holeX = W / 2;
+  const holeRx = 150 * SCALE;
+  const holeRy = 80 * SCALE;
+  const holeY = H - 400 * SCALE;
+  const waterY = holeY;
+  floatY = waterY;
+
+  // 찌 bob (대기 중)
+  floatBobTimer += dt;
+
+  // 파문 생성: floatDive가 일정 이상 증가할 때마다
+  if (lastFloatDive < 2 && floatDive >= 2 && state === STATE.BITE) {
+    addRipple(holeX, waterY, 4);
+  }
+  if (lastFloatDive >= 2 && floatDive < 2 && (state === STATE.BITE || state === STATE.WAITING)) {
+    addRipple(holeX, waterY, 1);
+  }
+  lastFloatDive = floatDive;
+
+  // 파문 업데이트
+  for (let i = ripples.length - 1; i >= 0; i--) {
+    ripples[i].life -= dt * 0.7;
+    if (ripples[i].life <= 0) ripples.splice(i, 1);
+  }
+
+  // 잡힌 물고기 슬라이딩 업데이트 (임펄스 + 마찰 감쇠)
+  for (const f of caughtFishList) {
+    if (f.settled) continue;
+    const friction = 1 - Math.min(0.99, dt * 7);
+    f.vx *= friction; f.vy *= friction;
+    f.x += f.vx * dt;
+    f.y += f.vy * dt;
+    const spd = Math.sqrt(f.vx * f.vx + f.vy * f.vy);
+
+    if (!f.coasting && spd < 120) {
+      // 감속 구간 진입: 최종 각도 + 최대 10% 추가 회전량 확정
+      f.coasting = true;
+      // finalRot 반대 방향으로 최대 10% 되돌아옴 (미끄러져 멈추는 반동)
+      f.settleRot = f.finalRot - Math.sign(f.finalRot) * Math.random() * (40 * Math.PI / 180) * 0.1;
+    }
+
+    if (f.coasting) {
+      // 관성으로 미끄러지는 동안 비행 방향 유지하며 settleRot으로 스르륵 회전
+      f.curRot += (f.settleRot - f.curRot) * Math.min(1, dt * 3);
+    } else {
+      // 비행 중: finalRot 방향으로 서서히 기울어짐
+      f.curRot += (f.finalRot - f.curRot) * Math.min(1, dt * 2);
+    }
+
+    if (spd < 1) {
+      f.vx = 0; f.vy = 0;
+      f.curRot = f.settleRot ?? f.finalRot;
+      f.settled = true;
+    }
+  }
+
+  // 감쇠 진동자: 수면(0) 중심으로 위아래 진동하며 수렴 (바닥 충돌 없음)
+  if (floatBounce !== 0 || Math.abs(floatBounceVel) > 0.1) {
+    const k = 25, d = 3; // 스프링 상수(진동 속도), 감쇠(수렴 속도)
+    floatBounceVel += (-k * floatBounce - d * floatBounceVel) * dt;
+    floatBounce    += floatBounceVel * dt;
+    if (Math.abs(floatBounce) < 0.15 && Math.abs(floatBounceVel) < 0.5) {
+      floatBounce = 0; floatBounceVel = 0;
+    }
+  }
+
+  // 찌 tilt: 다이브 중→0°, 수면 정지→5° / 부드럽게 lerp
+  {
+    const targetTilt = floatDive > 0 ? 0 : (5 * Math.PI / 180);
+    floatTiltAngle += (targetTilt - floatTiltAngle) * Math.min(1, 8 * dt);
+  }
+
+  // FIGHTING 중 찌 움직임 (드리프트: 좌우 / 위글: 상하)
+  if (state === STATE.FIGHTING) {
+    // 드리프트: 물고기가 끌어당기듯 좌우 이동
+    floatDriftTimer -= dt;
+    if (floatDriftTimer <= 0) {
+      const driftRange = isBursting ? holeRx * 0.75 : holeRx * 0.55;
+      const sign = floatDriftX >= 0 ? -1 : 1;
+      floatDriftTarget = sign * (driftRange * (0.5 + Math.random() * 0.5));
+      floatDriftTimer = 1.2 + Math.random() * 1.2;
+    }
+    floatDriftX += (floatDriftTarget - floatDriftX) * Math.min(1, 2.5 * dt);
+
+    // 위글: 상하 불규칙 오르락내리락
+    if (isBursting) {
+      // 버스트: 아래로 쭉 빨려들어가는 느낌 (부드럽게 lerp)
+      floatWiggleX += (holeRy * 0.9 - floatWiggleX) * Math.min(1, 6 * dt);
+    } else {
+      // 일반: 타이머 기반으로 새 목표 설정 후 lerp
+      floatWiggleT -= dt;
+      if (floatWiggleT <= 0) {
+        floatWiggleT = 0.05 + Math.random() * 0.05;
+        floatWiggleVel = (Math.random() - 0.5) * 2 * (holeRy * 0.18);
+      }
+      floatWiggleX += (floatWiggleVel - floatWiggleX) * Math.min(1, 8 * dt);
+    }
+  } else {
+    floatDriftX += (0 - floatDriftX) * Math.min(1, 8 * dt);
+    floatWiggleX = 0;
+    floatWiggleVel = 0;
+    floatWiggleT = 0;
+    floatDriftTimer = 0;
+  }
+
+  switch(state) {
+    case STATE.IDLE:
+      floatDive = 0;
+      break;
+
+    case STATE.CASTING:
+      if (castProgress === 0) addRipple(holeX, waterY);
+      // 입수 딥 애니메이션: 0.3초 동안 sin 곡선으로 10px 내려갔다 복귀
+      if (castDipProgress < 1) castDipProgress = Math.min(1, castDipProgress + dt / 0.3);
+      castProgress += dt * (reelRetrieve / depth) * 2;
+      lineLength = castProgress * depth;
+      if (castProgress >= 1) {
+        castProgress = 1;
+        lineLength = depth;
+        state = STATE.WAITING;
+        biteTimer = 1.0 + Math.random();
+
+      }
+      break;
+
+    case STATE.WAITING:
+      floatDive = 0;
+      if (biteCooldown > 0) { biteCooldown -= dt; break; }
+      biteTimer -= dt;
+      if (biteTimer <= 0) {
+        startBite();
+        biteTimer = (1/biteRate) * (0.8 + Math.random()*0.4);
+      }
+      break;
+
+    case STATE.BITE:
+      updateBite(dt);
+      break;
+
+    case STATE.FIGHTING: {
+      // 스태미나 감소: 무거울수록 천천히 소진
+      const drainRate = 0.05 + 0.04 / fish.fishWeight;
+      fish.fishStamina -= drainRate * dt;
+      if (mouseDown) fish.fishStamina -= 0.055 * dt;
+      fish.fishStamina = Math.max(0, fish.fishStamina);
+
+      // 라스트 버스트: 2kg 이상 물고기, 스태미나 바닥날 때 한 번
+      if (!fish.lastGaspFired && fish.fishStamina < 0.15 && fish.fishWeight > 2.0) {
+        if (Math.random() < 0.004) {
+          fish.fishStamina = 0.4;
+          fish.lastGaspFired = true;
+          isBursting = true;
+          burstDuration = 0.7;
+          tensionFlash = 1.0;
+          addParticles(holeX, waterY, 14, '#ff6b6b');
+          showMsg('LAST RUN!', '#ff5a5a', 1.2);
+        }
+      }
+
+      // 일반 버스트
+      burstTimer -= dt;
+      if (burstTimer <= 0 && !isBursting) {
+        isBursting = true;
+        burstDuration = 0.3 + Math.random() * 0.25;
+        burstTimer = 2.5 + Math.random() * 2.5;
+        tensionFlash = 1.0;
+        addParticles(holeX, waterY, 8, '#a8d8f0');
+      }
+      if (isBursting) {
+        burstDuration -= dt;
+        if (burstDuration <= 0) isBursting = false;
+      }
+      if (tensionFlash > 0) tensionFlash = Math.max(0, tensionFlash - dt * 4);
+
+      // 서지 파동: 두 사인파 합성으로 불규칙한 "힘쓰는" 패턴 (0~1)
+      fish.surgeTimer = (fish.surgeTimer || 0) + dt;
+      const f1 = 0.45 + fish.fishWeight * 0.10;   // 무거울수록 빠른 주기
+      const f2 = f1 * 0.63;                         // 비정수배 → 비주기적 느낌
+      const raw = Math.sin(fish.surgeTimer * f1 * Math.PI * 2)
+                + Math.sin(fish.surgeTimer * f2 * Math.PI * 2 + 1.3) * 0.7;
+      const surgeVal = Math.max(0, raw / 1.7);      // 0~1, 양의 구간만
+
+      // 물고기 강도 계수 (무게 × 스태미나, 버스트 시 가중)
+      const burstMult = isBursting ? 2.4 : 1.0;
+      const intensity  = fish.fishWeight
+                       * (0.45 + 0.55 * fish.fishStamina)  // 지쳐도 절반은 유지
+                       * burstMult;
+      // 서지: 평상시엔 파동으로 출렁. 버스트 중엔 파동을 무시하고 최대치로
+      // 강하게 끌어당긴다(run) → 게이지가 천장으로 직행, 즉시 손을 떼야 함.
+      const effSurge   = isBursting ? Math.max(surgeVal, 0.9) : surgeVal;
+      const surgeForce = 0.5 + 1.3 * effSurge;             // 0.5(이완) ~ 1.8(힘쓸 때)
+      const pull = intensity * surgeForce;                 // 줄 끌어내는 힘
+
+      // ── 텐션 = 서지 성분(즉각·진동) + 릴 부하(누적) ──
+      // 1) 서지 성분: 물고기가 힘쓰는 파동을 그대로 반영. 릴을 잡으면 100% 실리고
+      //    손을 떼면(드랙 슬립) 35%로 약해진다 → 마루에선 떼고 골에선 감는 리듬.
+      const reelGrip = mouseDown ? 1.0 : 0.35;
+      const surgeTension = intensity * surgeForce * 26 * reelGrip;
+
+      // 2) 릴 부하: 계속 감으면 쌓이고, 손을 떼면 빠르게 빠진다 (과도한 릴링 억제)
+      fish.reelLoad = fish.reelLoad || 0;
+      if (mouseDown) {
+        fish.reelLoad += 16 * dt;
+        lineLength -= 72 * dt;                             // 감김 (고정 속도)
+        if (lineLength < 0) lineLength = 0;
+      } else {
+        fish.reelLoad -= 50 * dt;
+        lineLength += (2 + pull * 3) * dt;                 // 물고기가 줄을 끌어냄
+        if (lineLength > depth) lineLength = depth;
+      }
+      fish.reelLoad = Math.max(0, Math.min(60, fish.reelLoad));
+
+      // 합산 후 가볍게 스무딩 (프레임 떨림 방지)
+      const tensionTarget = Math.min(100, surgeTension + fish.reelLoad);
+      lineTension += (tensionTarget - lineTension) * Math.min(1, 14 * dt);
+      lineTension = Math.max(0, Math.min(100, lineTension));
+
+      // 라인 터짐: 릴링 중 텐션 95 이상 0.35초 지속 (손 떼면 드랙 슬립 → 안 끊김)
+      if (mouseDown && lineTension >= 95) {
+        highTensionTimer += dt;
+      } else {
+        highTensionTimer = 0;
+      }
+      if (highTensionTimer >= 0.35) {
+        addParticles(holeX, waterY, 12, '#ff6b6b');
+        combo = 0; comboTimer = 0; hideComboMsg();
+        showMsg('LINE BREAK!', '#000000', 2.0);
+        state = STATE.FAIL; fish = null;
+        lineTension = 0; lowTensionTimer = 0; highTensionTimer = 0;
+        setTimeout(() => { lineLength = 0; castProgress = 0; castDipProgress = 0; floatDive = 0; lastFloatDive = 0; biteRising = false; state = STATE.CASTING; }, 1200);
+        break;
+      }
+
+      // 바늘 빠짐: 릴링 버튼을 안 누른 상태가 0.8초 지속
+      if (!mouseDown) {
+        lowTensionTimer += dt;
+        if (lowTensionTimer >= 0.8) {
+          addParticles(holeX, waterY, 8, '#ffffff');
+          combo = 0; comboTimer = 0; hideComboMsg();
+          showMsg('HOOK OUT!', '#000000', 2.0);
+          state = STATE.FAIL; fish = null;
+          lineTension = 0; lowTensionTimer = 0;
+          setTimeout(() => { lineLength = 0; castProgress = 0; castDipProgress = 0; floatDive = 0; lastFloatDive = 0; biteRising = false; state = STATE.CASTING; }, 1200);
+          break;
+        }
+      } else {
+        lowTensionTimer = 0;
+      }
+
+      // 랜딩 성공
+      if (lineLength <= 0) {
+        const basePt = Math.round(fish.fishWeight * 10);
+        const pt = basePt * combo;
+        totalScore += pt;
+        if (totalScore > bestScore) bestScore = totalScore;
+        catchCount++;
+        catchLog.unshift({ name: fish.name, w: fish.fishWeight, pt, combo });
+        addParticles(holeX, waterY, 20, '#a8d8f0');
+        spawnPtPopup(`+${pt}`, holeX, holeY - holeRy - 20);
+        spawnCaughtFish(holeX, waterY);
+        state = STATE.LANDING;
+        fish = null;
+        lineTension = 0;
+        setTimeout(() => { lineLength = 0; castProgress = 0; castDipProgress = 0; floatDive = 0; lastFloatDive = 0; biteRising = false; state = STATE.CASTING; }, 1000);
+      }
+      break;
+    }
+  }
+}
+
+function draw() {
+  ctx.clearRect(0,0,W,H);
+
+  const holeX = W / 2;
+  const holeRx = 150 * SCALE;
+  const holeRy = 80 * SCALE;
+  const holeY = H - 400 * SCALE;
+  const waterY = holeY;
+
+  // --- 배경 (타이틀화면: bg_intro / 게임 중: bg_ice) ---
+  if (state === STATE.IDLE && imgReady('bg_intro')) {
+    drawFitV(IMG.bg_intro);
+    return; // 타이틀 화면은 배경만 그리고 종료
+  }
+  if (imgReady('bg_ice')) {
+    drawFitV(IMG.bg_ice);
+  } else {
+    const iceGrad = ctx.createRadialGradient(holeX, holeY, holeRx * 0.5, W * 0.4, H * 0.3, Math.max(W, H));
+    iceGrad.addColorStop(0,   '#c2dff0');
+    iceGrad.addColorStop(0.4, '#d8eefa');
+    iceGrad.addColorStop(1,   '#a8cce0');
+    ctx.fillStyle = iceGrad;
+    ctx.fillRect(0, 0, W, H);
+
+    const crackSeeds = [
+      [holeX - holeRx * 0.9, holeY - holeRy * 0.6, -0.42, -0.35],
+      [holeX + holeRx * 0.95, holeY - holeRy * 0.5,  0.38, -0.28],
+      [holeX - holeRx * 0.8, holeY + holeRy * 0.7, -0.32,  0.40],
+      [holeX + holeRx * 0.7, holeY + holeRy * 0.8,  0.30,  0.38],
+      [holeX + holeRx * 0.1, holeY - holeRy,         0.05, -0.45],
+      [holeX - holeRx * 0.3, holeY + holeRy,        -0.12,  0.44],
+      [holeX - holeRx,       holeY + holeRy * 0.1,  -0.45,  0.06],
+      [holeX + holeRx,       holeY - holeRy * 0.2,   0.46, -0.08],
+    ];
+    ctx.lineWidth = 0.8;
+    for (const [sx, sy, dx, dy] of crackSeeds) {
+      const len = 0.38 + Math.abs(dx + dy) * 0.2;
+      const ex = sx + dx * W * len;
+      const ey = sy + dy * H * len;
+      ctx.strokeStyle = 'rgba(150,195,225,0.45)';
+      ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke();
+      const mx = (sx + ex) / 2, my = (sy + ey) / 2;
+      ctx.strokeStyle = 'rgba(150,195,225,0.25)';
+      ctx.beginPath(); ctx.moveTo(mx, my);
+      ctx.lineTo(mx + dy * W * 0.12, my - dx * H * 0.12); ctx.stroke();
+    }
+
+    const shineGrad = ctx.createLinearGradient(0, 0, 0, H);
+    shineGrad.addColorStop(0,   'rgba(255,255,255,0.22)');
+    shineGrad.addColorStop(0.6, 'rgba(255,255,255,0)');
+    ctx.fillStyle = shineGrad;
+    ctx.fillRect(0, 0, W, H);
+
+    const vigGrad = ctx.createLinearGradient(0, H * 0.65, 0, H);
+    vigGrad.addColorStop(0, 'rgba(10,20,35,0)');
+    vigGrad.addColorStop(1, 'rgba(10,20,35,0.55)');
+    ctx.fillStyle = vigGrad;
+    ctx.fillRect(0, H * 0.65, W, H * 0.35);
+  }
+
+  // overlay_hole 미사용 시 폴백: 구멍 물/테두리 캔버스 드로잉
+  if (!imgReady('overlay_hole')) {
+    const shadowGrad = ctx.createRadialGradient(holeX + 5, holeY + 5, 0, holeX + 5, holeY + 5, holeRx * 1.3);
+    shadowGrad.addColorStop(0,   'rgba(0,10,25,0.5)');
+    shadowGrad.addColorStop(1,   'rgba(0,10,25,0)');
+    ctx.fillStyle = shadowGrad;
+    ctx.beginPath(); ctx.ellipse(holeX + 5, holeY + 5, holeRx * 1.2, holeRy * 1.2, 0, 0, Math.PI * 2); ctx.fill();
+
+    const waterGrad = ctx.createRadialGradient(holeX - holeRx * 0.2, holeY - holeRy * 0.2, 0, holeX, holeY, holeRx);
+    waterGrad.addColorStop(0,   '#153a5c');
+    waterGrad.addColorStop(0.5, '#0d2640');
+    waterGrad.addColorStop(1,   '#071828');
+    ctx.fillStyle = waterGrad;
+    ctx.beginPath(); ctx.ellipse(holeX, holeY, holeRx, holeRy, 0, 0, Math.PI * 2); ctx.fill();
+
+    ctx.save();
+    ctx.beginPath(); ctx.ellipse(holeX, holeY, holeRx - 2, holeRy - 1, 0, 0, Math.PI * 2); ctx.clip();
+    const tw = Date.now() * 0.0008;
+    for (let i = 0; i < 4; i++) {
+      const wx = holeX + Math.sin(tw + i * 1.4) * holeRx * 0.35;
+      const wy = holeY + Math.cos(tw * 0.7 + i * 1.1) * holeRy * 0.3;
+      const wr = 10 + i * 6 + Math.sin(tw + i) * 4;
+      ctx.strokeStyle = `rgba(80,160,220,${0.12 - i * 0.02})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.ellipse(wx, wy, wr, wr * 0.45, 0, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // --- LAYER 2: 찌 포지션 계산 (그리기는 overlay_hole 이후) ---
+  let floatFX = holeX, floatFY = holeY;
+  const floatActive = state === STATE.CASTING || state === STATE.WAITING || state === STATE.BITE || state === STATE.FIGHTING;
+  if (floatActive) {
+    if (state === STATE.WAITING || state === STATE.BITE) {
+      floatFY = holeY + floatDive + floatBounce;
+    } else if (state === STATE.FIGHTING) {
+      floatFX = holeX + floatDriftX;
+      floatFY = holeY + floatWiggleX;
+    } else if (state === STATE.CASTING) {
+      floatFY = holeY + Math.sin(castDipProgress * Math.PI) * 10 * SCALE;
+    }
+  }
+
+  // --- LAYER 2: 찌 ---
+  if (floatActive) {
+    const FLOAT_R = 20;
+    if (imgReady('float')) {
+      // 수면 정지 → 5°, 다이브 중 → 0° (update()에서 lerp된 floatTiltAngle 사용)
+      ctx.save();
+      ctx.translate(floatFX, floatFY);
+      ctx.rotate(floatTiltAngle);
+      ctx.drawImage(IMG.float, -64 * SCALE, -64 * SCALE, 128 * SCALE, 128 * SCALE);
+      ctx.restore();
+    } else {
+      ctx.fillStyle = 'rgba(0,0,0,0.28)';
+      ctx.beginPath(); ctx.arc(floatFX + 2, floatFY + 2, FLOAT_R, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#e84030';
+      ctx.beginPath(); ctx.arc(floatFX, floatFY, FLOAT_R, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.45)';
+      ctx.beginPath(); ctx.arc(floatFX - FLOAT_R * 0.28, floatFY - FLOAT_R * 0.3, FLOAT_R * 0.32, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+
+  // --- LAYER 3: overlay_hole ---
+  if (imgReady('overlay_hole')) {
+    const oW = (holeRx + 40 * SCALE) * 2;
+    const oH = (holeRy + 40 * SCALE) * 2;
+    ctx.drawImage(IMG.overlay_hole, holeX - oW / 2, holeY - oH / 2, oW, oH);
+  } else {
+    ctx.strokeStyle = 'rgba(210,235,250,0.95)';
+    ctx.lineWidth = 3.5;
+    ctx.beginPath(); ctx.ellipse(holeX, holeY, holeRx, holeRy, 0, 0, Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.ellipse(holeX, holeY, holeRx - 4, holeRy - 2.5, 0, 0, Math.PI * 2); ctx.stroke();
+  }
+
+  // --- LAYER 4: 파문 애니메이션 ---
+  if (ripples.length > 0) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.ellipse(holeX, holeY, holeRx - 2, holeRy - 1, 0, 0, Math.PI * 2);
+    ctx.clip();
+    for (const r of ripples) {
+      const t = 1 - r.life;
+      const rx = (20 * SCALE) + (holeRx - 20 * SCALE) * t;
+      const ry = rx * (holeRy / holeRx);
+      ctx.strokeStyle = `rgba(150,210,240,${r.life * 0.25})`;
+      ctx.lineWidth = r.lineWidth;
+      ctx.beginPath();
+      ctx.ellipse(r.x, r.y, rx, ry, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // --- LAYER 5: fg_ice ---
+  if (imgReady('fg_ice')) {
+    drawFitV(IMG.fg_ice);
+  }
+
+
+
+  // --- LAYER 6: 잡힌 물고기 (fg_ice 위) ---
+  if (imgReady('fish1')) {
+    const fw = IMG.fish1.naturalWidth * SCALE;
+    const fh = IMG.fish1.naturalHeight * SCALE;
+    for (const f of caughtFishList) {
+      ctx.save();
+      ctx.globalAlpha = f.alpha;
+      ctx.translate(holeX + f.x * SCALE, holeY + f.y * SCALE);
+      ctx.rotate(f.curRot);
+      ctx.scale(f.flipX ? -f.scale : f.scale, f.scale);
+      ctx.drawImage(IMG.fish1, -fw / 2, -fh / 2, fw, fh);
+      ctx.restore();
+    }
+  }
+  ctx.globalAlpha = 1;
+
+  // --- 파티클 (결과 화면에서는 숨김) ---
+  if (gameActive) {
+    for (const p of particles) {
+      ctx.globalAlpha = p.life;
+      ctx.fillStyle = p.color;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // --- HUD ---
+  drawHUD(holeY, holeRy);
+
+  // --- 콤보 메시지 / 점수 메시지 (결과 화면에서는 숨김) ---
+  if (gameActive) {
+    if (comboMsg.active && comboMsg.alpha > 0) {
+      ctx.save();
+      ctx.globalAlpha = comboMsg.alpha;
+      ctx.font = 'bold 32px "Noto Sans KR"';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#ff2200';
+      ctx.fillText(`x${comboMsg.count} COMBO!`, W/2, comboMsg.y);
+      ctx.restore();
+    }
+    if (msgTimer > 0) {
+      const alpha = Math.min(1, msgTimer * 2);
+      ctx.globalAlpha = alpha;
+      ctx.font = '500 28px "Noto Sans KR"';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = msgColor;
+      ctx.fillText(msg, W / 2, holeY - holeRy - 28);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // --- 커스텀 커서 ---
+  ctx.strokeStyle = 'rgba(130,180,215,0.85)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(mouseX, mouseY, 8, 0, Math.PI * 2); ctx.stroke();
+  ctx.fillStyle = 'rgba(130,180,215,0.45)';
+  ctx.beginPath(); ctx.arc(mouseX, mouseY, 2, 0, Math.PI * 2); ctx.fill();
+}
+
+function drawHUD(holeY, holeRy) {
+  const pad = 20;
+
+  // ── 좌상단 패널 (고정 픽셀, SCALE 없음) ──
+  const px = pad, py = pad;
+  const topW = 400, topH = 96;
+  const botH = 200;
+  const lx   = px + 16;
+
+  // 상단 섹션 배경
+  ctx.fillStyle = 'rgba(0,26,51,0.9)';
+  roundRect(ctx, px, py, topW, topH, 10); ctx.fill();
+  ctx.strokeStyle = 'rgba(168,216,240,0.18)';
+  ctx.lineWidth = 1;
+  roundRect(ctx, px, py, topW, topH, 10); ctx.stroke();
+
+  // 하단 섹션 배경
+  ctx.fillStyle = 'rgba(0,26,51,0.5)';
+  roundRect(ctx, px, py + topH, topW, botH, 10); ctx.fill();
+  ctx.strokeStyle = 'rgba(168,216,240,0.10)';
+  ctx.lineWidth = 1;
+  roundRect(ctx, px, py + topH, topW, botH, 10); ctx.stroke();
+
+  // 상단/하단 구분선
+  ctx.strokeStyle = 'rgba(168,216,240,0.12)';
+  ctx.beginPath(); ctx.moveTo(px, py + topH); ctx.lineTo(px + topW, py + topH); ctx.stroke();
+
+  // 세로 구분선 (TIME:200 | CATCH:100 | SCORE:100)
+  const divX1 = px + 200;
+  const divX2 = divX1 + 100;
+  ctx.strokeStyle = 'rgba(168,216,240,0.15)';
+  ctx.lineWidth = 1;
+  [divX1, divX2].forEach(x => {
+    ctx.beginPath(); ctx.moveTo(x, py + 10); ctx.lineTo(x, py + topH - 10); ctx.stroke();
+  });
+
+  const labelY  = py + 20;
+  const valueY  = py + 72;
+  const labelFt = '400 11px "Noto Sans KR"';
+
+  // --- TIME ---
+  ctx.font = labelFt; ctx.fillStyle = '#7aa8c4'; ctx.textAlign = 'left';
+  ctx.fillText('TIME', lx, labelY);
+  const min = Math.floor(timeLeft / 60);
+  const sec = Math.floor(timeLeft % 60);
+  const timeStr = `${min.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
+  ctx.font = 'bold 48px "Noto Sans KR"';
+  ctx.fillStyle = timeLeft < 10 ? '#ff5a5a' : '#ffffff';
+  ctx.fillText(timeStr, lx, valueY);
+
+  // --- FISH ---
+  const col1X = divX1 + 12;
+  ctx.font = labelFt; ctx.fillStyle = '#7aa8c4';
+  ctx.fillText('FISH', col1X, labelY);
+  ctx.font = 'bold 32px "Noto Sans KR"';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(`${catchCount}`, col1X, valueY);
+
+  // --- SCORE ---
+  const col2X = divX2 + 12;
+  ctx.font = labelFt; ctx.fillStyle = '#7aa8c4';
+  ctx.fillText('SCORE', col2X, labelY);
+  ctx.font = 'bold 32px "Noto Sans KR"';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(`${totalScore}`, col2X, valueY);
+
+  // ── 하단 섹션: 포획 로그 (상시 표시, 상단과 붙음) ──
+  {
+    const by = py + topH;
+
+    const lineH = 36;
+    ctx.textAlign = 'left';
+    ctx.font = '400 16px "Noto Sans KR"';
+    ctx.fillStyle = 'rgba(168,216,240,0.85)';
+    for (let i = 0; i < Math.min(catchLog.length, 5); i++) {
+      const c      = catchLog[i];
+      const rowY   = by + 30 + i * lineH;
+      ctx.globalAlpha = 1.0 - i * 0.15;
+      const comboStr = c.combo > 1 ? ` (${c.w.toFixed(1)}kg, ${c.combo}x Combo)` : ` (${c.w.toFixed(1)}kg)`;
+      ctx.fillText(`FISH ${catchCount - i}: ${c.pt}pt${comboStr}`, lx, rowY);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // ── 우상단: LINE LENGTH 세로 게이지 (실처럼 얇은 선) ──
+  {
+    const gPanelW = 64, gPanelH = 300;
+    const gPanelX = W - 20 - gPanelW;
+    const gPanelY = 20;
+
+    // 패널 배경 (고정 100×400, 좌상단 패널과 동일 스타일)
+    ctx.fillStyle = 'rgba(0,26,51,0.9)';
+    roundRect(ctx, gPanelX, gPanelY, gPanelW, gPanelH, 10); ctx.fill();
+    ctx.strokeStyle = 'rgba(168,216,240,0.18)';
+    ctx.lineWidth = 1;
+    roundRect(ctx, gPanelX, gPanelY, gPanelW, gPanelH, 10); ctx.stroke();
+
+    // 게이지 트랙 영역 계산
+    const gW  = 48;
+    const gH  = gPanelH - 72;
+    const gCX = gPanelX + gPanelW / 2;
+    const gY  = gPanelY + 36;
+
+    // 낚시꾼: 상단 고정
+    drawAnglerIcon(gCX + 10, gY - 18, 0.7);
+
+    // 아이콘 위치: lineLength=0→상단, lineLength=depth→하단
+    const iconAlpha = (!gameActive || state === STATE.FIGHTING || state === STATE.CASTING || state === STATE.WAITING || state === STATE.BITE) ? 1.0 : 0.35;
+    const iconPosY = gY + (lineLength / depth) * gH;
+
+    // 4px 선 — 전체(어두운) + 활성 위쪽(연한)
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    // 전체 트랙 (어두운)
+    ctx.strokeStyle = 'rgba(168,216,240,0.15)';
+    ctx.beginPath(); ctx.moveTo(gCX, gY); ctx.lineTo(gCX, gY + gH); ctx.stroke();
+    // 활성 구간
+    if (iconPosY > gY) {
+      ctx.strokeStyle = 'rgba(168,216,240,0.75)';
+      ctx.beginPath(); ctx.moveTo(gCX, gY); ctx.lineTo(gCX, iconPosY); ctx.stroke();
+    }
+
+    // 하단 최대깊이 마커
+    ctx.fillStyle = 'rgba(168,216,240,0.25)';
+    ctx.beginPath(); ctx.arc(gCX, gY + gH, 4, 0, Math.PI*2); ctx.fill();
+
+    // 아이콘
+    if (state === STATE.FIGHTING) {
+      drawFishIcon(gCX, iconPosY, iconAlpha, false, mouseDown ? 0 : Math.PI);
+    } else {
+      drawHookIcon(gCX, iconPosY, iconAlpha);
+    }
+
+  }
+
+  // ── 중앙 하단: TENSION 타코미터 (11시→1시, 완만한 아치) ──
+  if (state === STATE.FIGHTING && gameActive) {
+    const DEG    = Math.PI / 180;
+    const cx     = W / 2;
+    // 원의 중심을 화면 아래로 밀어 아치를 평탄하게
+    const R      = Math.round(Math.min(340 * SCALE, W * 0.28));
+    const cy     = H + Math.round(R * 0.52);
+    const trackW = Math.round(16 * SCALE);
+    // 11시=233°, 1시=307°, clockwise through 270°(up)
+    const startA = 233 * DEG;
+    const endA   = 307 * DEG;
+    const sweep  =  74 * DEG;
+
+    // 아치 양 끝점 (패널 배경 계산용)
+    const ax1 = cx + Math.cos(startA) * R, ay1 = cy + Math.sin(startA) * R;
+    const ax2 = cx + Math.cos(endA)   * R, ay2 = cy + Math.sin(endA)   * R;
+    const arcTopY = cy - R;  // 270° 꼭대기
+
+
+    // 트랙
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, startA, endA, false);
+    ctx.strokeStyle = 'rgba(0,26,51,0.9)';
+    ctx.lineWidth = trackW;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    // 채우기
+    const tensionRatio = Math.min(lineTension / 100, 1);
+    if (tensionRatio > 0) {
+      const fillEndA = startA + tensionRatio * sweep;
+      const tGrad = ctx.createLinearGradient(ax1, ay1, ax2, ay2);
+      tGrad.addColorStop(0,    '#22dd44');
+      tGrad.addColorStop(0.55, '#ffcc00');
+      tGrad.addColorStop(0.75, '#ff6600');
+      tGrad.addColorStop(1,    '#ff2222');
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, startA, fillEndA, false);
+      ctx.strokeStyle = tGrad;
+      ctx.lineWidth = trackW;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+    }
+
+    // 버스트 번쩍
+    if (tensionFlash > 0) {
+      const fillEndA = startA + tensionRatio * sweep;
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, startA, fillEndA, false);
+      ctx.strokeStyle = `rgba(255,60,40,${tensionFlash * 0.55})`;
+      ctx.lineWidth = trackW + 6;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+    }
+
+    // 수치 + 라벨 (아치 꼭대기 안쪽)
+    const tColor = lineTension > 70 ? '#ff5a5a' : lineTension > 40 ? '#ffcc44' : '#7ef7a0';
+    ctx.font = `bold ${Math.round(40*SCALE)}px "Noto Sans KR"`;
+    ctx.textAlign = 'center';
+    ctx.fillStyle = tColor;
+    ctx.fillText(Math.round(lineTension), cx, arcTopY + Math.round(64*SCALE));
+  }
+
+  // ── +pt 팝업 (스케일 인 → 위로 떠오르며 페이드) ──
+  if (gameActive) {
+    for (const p of ptPopups) {
+      const progress = p.t / p.duration;
+      const scaleInDur = 0.15;
+      const scale = p.t < scaleInDur ? p.t / scaleInDur : 1;
+      const alpha = progress > 0.5 ? 1 - (progress - 0.5) / 0.5 : 1;
+      const floatY = p.y - progress * 80;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.translate(p.x, floatY);
+      ctx.scale(scale, scale);
+      ctx.font = 'bold 36px "Noto Sans KR"';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+      ctx.lineWidth = 4;
+      ctx.strokeText(p.text, 0, 0);
+      ctx.fillText(p.text, 0, 0);
+      ctx.restore();
+    }
+  }
+
+  // ── 메시지 (구멍 위, 결과 화면에서는 숨김) ──
+  if (gameActive && msgTimer > 0) {
+    const alpha = Math.min(1, msgTimer * 2);
+    ctx.globalAlpha = alpha;
+    ctx.font = '500 28px "Noto Sans KR"';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = msgColor;
+    ctx.fillText(msg, W/2, holeY - holeRy - 30);
+    ctx.globalAlpha = 1;
+  }
+
+
+
+
+
+
+}
+
+// rotation(라디안) 지정 시 해당 각도로 회전, 미지정 시 facingRight 좌우반전 적용
+function drawFishIcon(x, y, alpha, facingRight, rotation) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(x, y);
+  if (rotation !== undefined) {
+    ctx.rotate(rotation);
+  } else if (!facingRight) {
+    ctx.scale(-1, 1);
+  }
+  if (imgReady('icon_fish')) {
+    ctx.drawImage(IMG.icon_fish, -24, -24, 48, 48);
+  } else {
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.ellipse(2, 0, 9, 5, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-7, 0); ctx.lineTo(-16, -5); ctx.lineTo(-16, 5); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#0d2340';
+    ctx.beginPath(); ctx.arc(8, -1, 1.5, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawHookIcon(x, y, alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  if (imgReady('icon_hook')) {
+    ctx.drawImage(IMG.icon_hook, x - 24, y - 24, 48, 48);
+  } else {
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 1.8;
+    ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(x, y - 10); ctx.lineTo(x, y + 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(x + 3, y + 2, 5, Math.PI, 0, false); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x + 8, y + 2); ctx.lineTo(x + 5, y + 5); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawAnglerIcon(x, y, alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  if (imgReady('icon_angler')) {
+    ctx.drawImage(IMG.icon_angler, x - 24, y - 24, 48, 48);
+  } else {
+    ctx.strokeStyle = '#ffffff';
+    ctx.fillStyle = '#ffffff';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(x, y - 14, 4, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x, y-10); ctx.lineTo(x, y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x-4, y+10); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x+4, y+10); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x, y-8); ctx.lineTo(x+14, y-18); ctx.stroke();
+    ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.moveTo(x+14, y-18); ctx.lineTo(x+14, y+2); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y);
+  ctx.arcTo(x+w,y, x+w,y+r, r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.arcTo(x+w,y+h, x+w-r,y+h, r);
+  ctx.lineTo(x+r, y+h);
+  ctx.arcTo(x,y+h, x,y+h-r, r);
+  ctx.lineTo(x, y+r);
+  ctx.arcTo(x,y, x+r,y, r);
+  ctx.closePath();
+}
+
+function loop(ts) {
+  if (!gameActive) return;
+  const dt = Math.min((ts - lastTime) / 1000, 0.05);
+  lastTime = ts;
+  update(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+
+// 마우스 이벤트
+canvas.addEventListener('mousemove', e => {
+  mouseX = e.clientX; mouseY = e.clientY;
+});
+
+canvas.addEventListener('mousedown', e => {
+  if (e.button !== 0) return;
+  mouseDown = true;
+  if (!gameActive) return;
+
+  if (state === STATE.WAITING || state === STATE.BITE) {
+    // 훅셋
+    if (floatDive >= 20 && !biteRising) {
+      combo++;
+      if (combo > maxCombo) maxCombo = combo;
+      comboTimer = 12.0;
+      spawnFish();
+      state = STATE.FIGHTING;
+      lineTension = 0;
+      lowTensionTimer = 0;
+      highTensionTimer = 0;
+      showMsg('FISH ON!', '#000000', 1.5);
+      showComboMsg(combo);
+      addParticles(W/2, H*0.44, 10, '#ffcc44');
+    } else {
+      combo = 0;
+      comboTimer = 0;
+      hideComboMsg();
+      showMsg('MISS!', '#000000', 1.0);
+    }
+  }
+});
+
+canvas.addEventListener('mouseup', e => {
+  if (e.button !== 0) return;
+  mouseDown = false;
+});
+
+// 초기 렌더
+lastTime = performance.now();
+draw();
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, doc, updateDoc, query, orderBy, limit, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyC-zKegcu7zQgWpJXCUpfS3hGQ133ZAJus",
+    authDomain: "gordon-icehole.firebaseapp.com",
+    projectId: "gordon-icehole",
+    storageBucket: "gordon-icehole.firebasestorage.app",
+    messagingSenderId: "1041565378517",
+    appId: "1:1041565378517:web:4628e21c9b559e9c8c3f5c"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  window._firebaseReady = true;
+
+  window.fetchLeaderboard = async function() {
+    try {
+      const q = query(collection(db, 'leaderboard'), orderBy('score', 'desc'), limit(100));
+      const snap = await getDocs(q);
+      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    } catch(e) {
+      console.error('leaderboard fetch error', e);
+      return [];
+    }
+  };
+
+  window.saveScoreToFirebase = async function(name, score, catches, maxCombo, playerId, flag) {
+    const ref = await addDoc(collection(db, 'leaderboard'), {
+      name, score, catches, maxCombo, playerId, flag: flag || '', timestamp: serverTimestamp()
+    });
+    return ref.id;
+  };
+
+  window.updateScoreName = async function(docId, name) {
+    await updateDoc(doc(db, 'leaderboard', docId), { name });
+  };
+</script>
+</body>
+</html>
