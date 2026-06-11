@@ -25,7 +25,7 @@
     -webkit-tap-highlight-color: transparent;
     cursor: none;
   }
-  canvas { display: block; cursor: none; touch-action: none; position: fixed; top: 0; left: 0; }
+  canvas { display: block; cursor: none; touch-action: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh; }
   #ui {
     position: fixed;
     top: 0; left: 0;
@@ -402,8 +402,9 @@ const ctx = canvas.getContext('2d');
 
 let W, H;
 function resize() {
-  W = canvas.width = window.innerWidth;
-  H = canvas.height = window.innerHeight;
+  // CSS(100vw/100dvh)로 렌더된 실제 크기에 버퍼를 맞춤 (iOS Safari 동적 뷰포트 대응)
+  W = canvas.width  = canvas.clientWidth  || window.innerWidth;
+  H = canvas.height = canvas.clientHeight || window.innerHeight;
   // 세로 기준 스케일 계산 (1920x1080 기준)
   SCALE = H / 1080;
 }
@@ -411,6 +412,10 @@ let SCALE = 1;
 resize();
 // 리사이즈 시 캔버스가 지워지므로, 게임 루프가 안 돌 때는 직접 다시 그린다
 window.addEventListener('resize', () => { resize(); if (!gameActive) draw(); });
+// iOS Safari 주소창 표시/숨김 시 뷰포트 변화 대응
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', () => { resize(); if (!gameActive) draw(); });
+}
 
 // --- 이미지 에셋 ---
 const IMG = {};
