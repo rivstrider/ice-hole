@@ -22,7 +22,8 @@
       "Bash(curl -s \"https://firestore.googleapis.com/v1/projects/gordon-icehole/databases/\\(default\\)/documents/leaderboard?pageSize=300\")",
       "Bash(python3 -c ' *)",
       "Bash(git commit -q -m 'Always show 100 leaderboard rows with '\\\\''-'\\\\'' placeholders *)",
-      "Bash(git commit -q -m 'Set play time to 90s *)"
+      "Bash(git commit -q -m 'Set play time to 90s *)",
+      "Bash(git commit -q -m 'Tap truncated leaderboard nickname to show full name toast *)"
     ]
   }
 }

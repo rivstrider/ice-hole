@@ -278,7 +278,26 @@
   .lb-rank.silver { color: #c0c8d0; }
   .lb-rank.bronze { color: #c09060; }
   .lb-flag { font-size: 14px; }
-  .lb-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 8px; }
+  .lb-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 8px; cursor: pointer; }
+  .lb-item.lb-empty .lb-name { cursor: default; }
+  #lbToast {
+    position: fixed;
+    z-index: 300;
+    display: none;
+    transform: translate(-50%, -100%);
+    background: rgba(0,26,51,0.97);
+    border: 1px solid rgba(168,216,240,0.45);
+    border-radius: 6px;
+    padding: 6px 10px;
+    color: #ffffff;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 13px;
+    line-height: 1.3;
+    max-width: 260px;
+    word-break: break-all;
+    pointer-events: none;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  }
   .lb-score { font-size: 14px; color: #ffffff; text-align: center; white-space: nowrap; }
   .lb-catches { font-size: 12px; color: #7aa8c4; text-align: center; white-space: nowrap; }
   .lb-combo { font-size: 12px; color: #7aa8c4; text-align: center; white-space: nowrap; }
@@ -397,6 +416,8 @@
   </div>
   <button id="resultPlayAgain" onclick="startGame()">PLAY AGAIN</button>
 </div>
+
+<div id="lbToast"></div>
 
 <script>
 const canvas = document.getElementById('c');
@@ -1912,6 +1933,37 @@ document.addEventListener('touchend', e => {
   if (now - _lastTouchEnd < 300) e.preventDefault(); // 더블탭 줌 차단
   _lastTouchEnd = now;
 }, { passive: false });
+
+// ── 잘린 닉네임 토스트: 말줄임된 이름을 탭/클릭하면 전체를 위에 띄움 ──
+(function setupLbToast() {
+  const toast = document.getElementById('lbToast');
+  let hideTimer = null;
+  function hide() { toast.style.display = 'none'; }
+  function show(el) {
+    toast.textContent = el.textContent;
+    toast.style.display = 'block';
+    const r = el.getBoundingClientRect();
+    toast.style.left = (r.left + r.width / 2) + 'px';
+    toast.style.top  = (r.top - 6) + 'px';
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(hide, 2500);
+  }
+  document.addEventListener('click', e => {
+    const name = e.target.closest && e.target.closest('.lb-name');
+    // 빈 슬롯 제외, 실제로 말줄임된 경우에만
+    if (name && !name.closest('.lb-empty') && name.scrollWidth > name.clientWidth + 1) {
+      show(name);
+      e.stopPropagation();
+    } else {
+      hide();
+    }
+  });
+  // 목록 스크롤 시 토스트가 떠다니지 않게 숨김
+  ['leaderboardList', 'lbPopupList'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('scroll', hide, { passive: true });
+  });
+})();
 
 // 초기 렌더
 lastTime = performance.now();
