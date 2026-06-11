@@ -431,7 +431,7 @@ function drawFitV(img) {
 const STATE = { IDLE:0, CASTING:1, WAITING:2, BITE:3, HOOKSET:4, FIGHTING:5, LANDING:6, FAIL:7 };
 let state = STATE.IDLE;
 let gameActive = false;
-let timeLeft = 90;
+let timeLeft = 10;
 let totalScore = 0;
 let bestScore = 0;
 let catchCount = 0;
@@ -612,7 +612,7 @@ function startGame() {
   document.getElementById('titleOverlay').style.display = 'none';
   document.getElementById('resultOverlay').style.display = 'none';
   gameActive = true;
-  timeLeft = 90;
+  timeLeft = 10;
   totalScore = 0;
   catchCount = 0;
   combo = 0;
