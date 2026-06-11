@@ -676,16 +676,28 @@ async function initNicknameInput() {
 
   if (!current) {
     input.placeholder = 'Loading IP...';
+    let ok = false;
+    // 1차: ipwho.is (IP + 국기 이모지 직접 제공)
     try {
-      // HTTPS 지원 무료 IP 조회 (호스팅 시 혼합 콘텐츠 차단 방지)
       const res = await fetch('https://ipwho.is/');
       const data = await res.json();
-      const flag = countryCodeToFlag(data.country_code || '');
-      localStorage.setItem('icehole_flag', flag);
-      current = data.ip || getPlayerId();
-    } catch(e) {
+      if (data && data.success !== false && data.ip) {
+        const flag = (data.flag && data.flag.emoji) || countryCodeToFlag(data.country_code || '');
+        localStorage.setItem('icehole_flag', flag);
+        current = data.ip;
+        ok = true;
+      }
+    } catch(e) { /* 차단/실패 시 폴백 */ }
+    // 2차: ipify (IP만, 매우 안정적) — 국기는 없음
+    if (!ok) {
+      try {
+        const res = await fetch('https://api.ipify.org?format=json');
+        const data = await res.json();
+        current = data.ip || getPlayerId();
+      } catch(e) {
+        current = getPlayerId();
+      }
       localStorage.setItem('icehole_flag', '');
-      current = getPlayerId();
     }
     saveNickname(current);
   }
