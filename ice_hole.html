@@ -45,6 +45,7 @@
     justify-content: center;
     padding-bottom: 100px;
     z-index: 100;
+    touch-action: none;
   }
   #titleControls {
     display: flex;
@@ -1877,6 +1878,21 @@ function releasePointer(e) {
 canvas.addEventListener('pointerup', releasePointer);
 canvas.addEventListener('pointercancel', releasePointer);
 canvas.addEventListener('pointerleave', releasePointer);
+
+// iOS Safari는 user-scalable=no를 무시 → 핀치줌/더블탭줌을 직접 차단
+// (단일 손가락 스크롤은 막지 않아 리더보드 목록 스크롤은 유지)
+document.addEventListener('gesturestart',  e => e.preventDefault());
+document.addEventListener('gesturechange', e => e.preventDefault());
+document.addEventListener('gestureend',    e => e.preventDefault());
+document.addEventListener('touchmove', e => {
+  if (e.touches.length > 1) e.preventDefault();   // 핀치(멀티터치)만 차단
+}, { passive: false });
+let _lastTouchEnd = 0;
+document.addEventListener('touchend', e => {
+  const now = performance.now();
+  if (now - _lastTouchEnd < 300) e.preventDefault(); // 더블탭 줌 차단
+  _lastTouchEnd = now;
+}, { passive: false });
 
 // 초기 렌더
 lastTime = performance.now();
