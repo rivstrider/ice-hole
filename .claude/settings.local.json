@@ -11,7 +11,9 @@
       "mcp__Claude_in_Chrome__tabs_context_mcp",
       "Bash(git commit -q -m 'Stack result panels vertically with flexible leaderboard height *)",
       "Bash(curl -s \"https://rivstrider.github.io/ice-hole/ice_hole.html?t=$\\(date +%s\\)\")",
-      "Bash(git commit -q -m 'Two-column result panel; match leaderboard popup design *)"
+      "Bash(git commit -q -m 'Two-column result panel; match leaderboard popup design *)",
+      "Bash(curl -s \"https://rivstrider.github.io/ice-hole/ice_hole.html?t=$\\(date +%s\\)\" > /tmp/live.html *)",
+      "Bash(git commit -q -m 'Make leaderboard popup adapt to viewport with scrolling list *)"
     ]
   }
 }

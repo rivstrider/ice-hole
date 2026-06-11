@@ -143,8 +143,8 @@
     border-radius: 12px;
     width: 440px;
     max-width: calc(100vw - 40px);
-    height: 70vh;
-    max-height: 560px;
+    height: auto;
+    max-height: calc(100vh - 80px);
     box-sizing: border-box;
     pointer-events: all;
     position: relative;
@@ -229,7 +229,7 @@
     box-sizing: border-box;
     pointer-events: all;
   }
-  .lb-title { font-family: 'Noto Sans KR', sans-serif; font-size: 13px; font-weight: 400; color: #7aa8c4; letter-spacing: 4px; margin-bottom: 14px; }
+  .lb-title { flex-shrink: 0; font-family: 'Noto Sans KR', sans-serif; font-size: 13px; font-weight: 400; color: #7aa8c4; letter-spacing: 4px; margin-bottom: 14px; }
   /* leaderboard grid — header and rows share identical column template */
   .lb-header,
   .lb-item {
@@ -240,6 +240,7 @@
     font-family: 'Noto Sans KR', sans-serif;
   }
   .lb-header {
+    flex-shrink: 0;
     font-size: 11px;
     color: #7aa8c4;
     letter-spacing: 1px;
