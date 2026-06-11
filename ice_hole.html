@@ -1460,7 +1460,7 @@ function draw() {
     if (comboMsg.active && comboMsg.alpha > 0) {
       ctx.save();
       ctx.globalAlpha = comboMsg.alpha;
-      ctx.font = 'bold 32px "Noto Sans KR"';
+      ctx.font = `bold ${32 * SCALE}px "Noto Sans KR"`;
       ctx.textAlign = 'center';
       ctx.fillStyle = '#ff2200';
       ctx.fillText(`x${comboMsg.count} COMBO!`, W/2, comboMsg.y);
@@ -1469,7 +1469,7 @@ function draw() {
     if (msgTimer > 0) {
       const alpha = Math.min(1, msgTimer * 2);
       ctx.globalAlpha = alpha;
-      ctx.font = '500 28px "Noto Sans KR"';
+      ctx.font = `500 ${28 * SCALE}px "Noto Sans KR"`;
       ctx.textAlign = 'center';
       ctx.fillStyle = msgColor;
       ctx.fillText(msg, W / 2, holeY - holeRy - 28);
@@ -1486,44 +1486,46 @@ function draw() {
 }
 
 function drawHUD(holeY, holeRy) {
-  const pad = 20;
+  const S = SCALE;
+  const pad = 20 * S;
 
-  // ── 좌상단 패널 (고정 픽셀, SCALE 없음) ──
+  // ── 좌상단 패널 (height 기준 SCALE 적용, 1920×1080 기준값) ──
   const px = pad, py = pad;
-  const topW = 400, topH = 96;
-  const botH = 200;
-  const lx   = px + 16;
+  const topW = 400 * S, topH = 96 * S;
+  const botH = 200 * S;
+  const lx   = px + 16 * S;
+  const rad  = 10 * S;
 
   // 상단 섹션 배경
   ctx.fillStyle = 'rgba(0,26,51,0.9)';
-  roundRect(ctx, px, py, topW, topH, 10); ctx.fill();
+  roundRect(ctx, px, py, topW, topH, rad); ctx.fill();
   ctx.strokeStyle = 'rgba(168,216,240,0.18)';
   ctx.lineWidth = 1;
-  roundRect(ctx, px, py, topW, topH, 10); ctx.stroke();
+  roundRect(ctx, px, py, topW, topH, rad); ctx.stroke();
 
   // 하단 섹션 배경
   ctx.fillStyle = 'rgba(0,26,51,0.5)';
-  roundRect(ctx, px, py + topH, topW, botH, 10); ctx.fill();
+  roundRect(ctx, px, py + topH, topW, botH, rad); ctx.fill();
   ctx.strokeStyle = 'rgba(168,216,240,0.10)';
   ctx.lineWidth = 1;
-  roundRect(ctx, px, py + topH, topW, botH, 10); ctx.stroke();
+  roundRect(ctx, px, py + topH, topW, botH, rad); ctx.stroke();
 
   // 상단/하단 구분선
   ctx.strokeStyle = 'rgba(168,216,240,0.12)';
   ctx.beginPath(); ctx.moveTo(px, py + topH); ctx.lineTo(px + topW, py + topH); ctx.stroke();
 
-  // 세로 구분선 (TIME:200 | CATCH:100 | SCORE:100)
-  const divX1 = px + 200;
-  const divX2 = divX1 + 100;
+  // 세로 구분선 (TIME:200 | FISH:100 | SCORE:100)
+  const divX1 = px + 200 * S;
+  const divX2 = divX1 + 100 * S;
   ctx.strokeStyle = 'rgba(168,216,240,0.15)';
   ctx.lineWidth = 1;
   [divX1, divX2].forEach(x => {
-    ctx.beginPath(); ctx.moveTo(x, py + 10); ctx.lineTo(x, py + topH - 10); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x, py + 10 * S); ctx.lineTo(x, py + topH - 10 * S); ctx.stroke();
   });
 
-  const labelY  = py + 20;
-  const valueY  = py + 72;
-  const labelFt = '400 11px "Noto Sans KR"';
+  const labelY  = py + 20 * S;
+  const valueY  = py + 72 * S;
+  const labelFt = `400 ${11 * S}px "Noto Sans KR"`;
 
   // --- TIME ---
   ctx.font = labelFt; ctx.fillStyle = '#7aa8c4'; ctx.textAlign = 'left';
@@ -1531,23 +1533,23 @@ function drawHUD(holeY, holeRy) {
   const min = Math.floor(timeLeft / 60);
   const sec = Math.floor(timeLeft % 60);
   const timeStr = `${min.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
-  ctx.font = 'bold 48px "Noto Sans KR"';
+  ctx.font = `bold ${48 * S}px "Noto Sans KR"`;
   ctx.fillStyle = timeLeft < 10 ? '#ff5a5a' : '#ffffff';
   ctx.fillText(timeStr, lx, valueY);
 
   // --- FISH ---
-  const col1X = divX1 + 12;
+  const col1X = divX1 + 12 * S;
   ctx.font = labelFt; ctx.fillStyle = '#7aa8c4';
   ctx.fillText('FISH', col1X, labelY);
-  ctx.font = 'bold 32px "Noto Sans KR"';
+  ctx.font = `bold ${32 * S}px "Noto Sans KR"`;
   ctx.fillStyle = '#ffffff';
   ctx.fillText(`${catchCount}`, col1X, valueY);
 
   // --- SCORE ---
-  const col2X = divX2 + 12;
+  const col2X = divX2 + 12 * S;
   ctx.font = labelFt; ctx.fillStyle = '#7aa8c4';
   ctx.fillText('SCORE', col2X, labelY);
-  ctx.font = 'bold 32px "Noto Sans KR"';
+  ctx.font = `bold ${32 * S}px "Noto Sans KR"`;
   ctx.fillStyle = '#ffffff';
   ctx.fillText(`${totalScore}`, col2X, valueY);
 
@@ -1555,48 +1557,48 @@ function drawHUD(holeY, holeRy) {
   {
     const by = py + topH;
 
-    const lineH = 36;
+    const lineH = 36 * S;
     ctx.textAlign = 'left';
-    ctx.font = '400 16px "Noto Sans KR"';
+    ctx.font = `400 ${16 * S}px "Noto Sans KR"`;
     ctx.fillStyle = 'rgba(168,216,240,0.85)';
     for (let i = 0; i < Math.min(catchLog.length, 5); i++) {
       const c      = catchLog[i];
-      const rowY   = by + 30 + i * lineH;
+      const rowY   = by + 30 * S + i * lineH;
       ctx.globalAlpha = 1.0 - i * 0.15;
       const comboStr = c.combo > 1 ? ` (${c.w.toFixed(1)}kg, ${c.combo}x Combo)` : ` (${c.w.toFixed(1)}kg)`;
-      ctx.fillText(`FISH ${catchCount - i}: ${c.pt}pt${comboStr}`, lx, rowY);
+      ctx.fillText(`FISH ${catchCount - i}: ${c.pt}${comboStr}`, lx, rowY);
     }
     ctx.globalAlpha = 1;
   }
 
   // ── 우상단: LINE LENGTH 세로 게이지 (실처럼 얇은 선) ──
   {
-    const gPanelW = 64, gPanelH = 300;
-    const gPanelX = W - 20 - gPanelW;
-    const gPanelY = 20;
+    const gPanelW = 64 * S, gPanelH = 300 * S;
+    const gPanelX = W - 20 * S - gPanelW;
+    const gPanelY = 20 * S;
+    const gRad    = 10 * S;
 
-    // 패널 배경 (고정 100×400, 좌상단 패널과 동일 스타일)
+    // 패널 배경 (좌상단 패널과 동일 스타일)
     ctx.fillStyle = 'rgba(0,26,51,0.9)';
-    roundRect(ctx, gPanelX, gPanelY, gPanelW, gPanelH, 10); ctx.fill();
+    roundRect(ctx, gPanelX, gPanelY, gPanelW, gPanelH, gRad); ctx.fill();
     ctx.strokeStyle = 'rgba(168,216,240,0.18)';
     ctx.lineWidth = 1;
-    roundRect(ctx, gPanelX, gPanelY, gPanelW, gPanelH, 10); ctx.stroke();
+    roundRect(ctx, gPanelX, gPanelY, gPanelW, gPanelH, gRad); ctx.stroke();
 
     // 게이지 트랙 영역 계산
-    const gW  = 48;
-    const gH  = gPanelH - 72;
+    const gH  = gPanelH - 72 * S;
     const gCX = gPanelX + gPanelW / 2;
-    const gY  = gPanelY + 36;
+    const gY  = gPanelY + 36 * S;
 
     // 낚시꾼: 상단 고정
-    drawAnglerIcon(gCX + 10, gY - 18, 0.7);
+    drawAnglerIcon(gCX + 10 * S, gY - 18 * S, 0.7);
 
     // 아이콘 위치: lineLength=0→상단, lineLength=depth→하단
     const iconAlpha = (!gameActive || state === STATE.FIGHTING || state === STATE.CASTING || state === STATE.WAITING || state === STATE.BITE) ? 1.0 : 0.35;
     const iconPosY = gY + (lineLength / depth) * gH;
 
-    // 4px 선 — 전체(어두운) + 활성 위쪽(연한)
-    ctx.lineWidth = 2;
+    // 선 — 전체(어두운) + 활성 위쪽(연한)
+    ctx.lineWidth = 2 * S;
     ctx.lineCap = 'round';
     // 전체 트랙 (어두운)
     ctx.strokeStyle = 'rgba(168,216,240,0.15)';
@@ -1609,7 +1611,7 @@ function drawHUD(holeY, holeRy) {
 
     // 하단 최대깊이 마커
     ctx.fillStyle = 'rgba(168,216,240,0.25)';
-    ctx.beginPath(); ctx.arc(gCX, gY + gH, 4, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(gCX, gY + gH, 4 * S, 0, Math.PI*2); ctx.fill();
 
     // 아이콘
     if (state === STATE.FIGHTING) {
@@ -1690,12 +1692,12 @@ function drawHUD(holeY, holeRy) {
       const scaleInDur = 0.15;
       const scale = p.t < scaleInDur ? p.t / scaleInDur : 1;
       const alpha = progress > 0.5 ? 1 - (progress - 0.5) / 0.5 : 1;
-      const floatY = p.y - progress * 80;
+      const floatY = p.y - progress * 80 * SCALE;
       ctx.save();
       ctx.globalAlpha = alpha;
       ctx.translate(p.x, floatY);
       ctx.scale(scale, scale);
-      ctx.font = 'bold 36px "Noto Sans KR"';
+      ctx.font = `bold ${36 * SCALE}px "Noto Sans KR"`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillStyle = '#ffffff';
@@ -1711,7 +1713,7 @@ function drawHUD(holeY, holeRy) {
   if (gameActive && msgTimer > 0) {
     const alpha = Math.min(1, msgTimer * 2);
     ctx.globalAlpha = alpha;
-    ctx.font = '500 28px "Noto Sans KR"';
+    ctx.font = `500 ${28 * SCALE}px "Noto Sans KR"`;
     ctx.textAlign = 'center';
     ctx.fillStyle = msgColor;
     ctx.fillText(msg, W/2, holeY - holeRy - 30);
@@ -1736,7 +1738,8 @@ function drawFishIcon(x, y, alpha, facingRight, rotation) {
     ctx.scale(-1, 1);
   }
   if (imgReady('icon_fish')) {
-    ctx.drawImage(IMG.icon_fish, -24, -24, 48, 48);
+    const s = 24 * SCALE;
+    ctx.drawImage(IMG.icon_fish, -s, -s, s * 2, s * 2);
   } else {
     ctx.fillStyle = '#ffffff';
     ctx.beginPath(); ctx.ellipse(2, 0, 9, 5, 0, 0, Math.PI*2); ctx.fill();
@@ -1751,7 +1754,8 @@ function drawHookIcon(x, y, alpha) {
   ctx.save();
   ctx.globalAlpha = alpha;
   if (imgReady('icon_hook')) {
-    ctx.drawImage(IMG.icon_hook, x - 24, y - 24, 48, 48);
+    const s = 24 * SCALE;
+    ctx.drawImage(IMG.icon_hook, x - s, y - s, s * 2, s * 2);
   } else {
     ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 1.8;
@@ -1767,7 +1771,8 @@ function drawAnglerIcon(x, y, alpha) {
   ctx.save();
   ctx.globalAlpha = alpha;
   if (imgReady('icon_angler')) {
-    ctx.drawImage(IMG.icon_angler, x - 24, y - 24, 48, 48);
+    const s = 24 * SCALE;
+    ctx.drawImage(IMG.icon_angler, x - s, y - s, s * 2, s * 2);
   } else {
     ctx.strokeStyle = '#ffffff';
     ctx.fillStyle = '#ffffff';
