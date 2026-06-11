@@ -1630,7 +1630,7 @@ function drawHUD(holeY, holeRy) {
       const rowY   = by + 30 * S + i * lineH;
       ctx.globalAlpha = 1.0 - i * 0.15;
       const comboStr = c.combo > 1 ? ` (${c.w.toFixed(1)}kg, ${c.combo}x Combo)` : ` (${c.w.toFixed(1)}kg)`;
-      ctx.fillText(`FISH ${catchCount - i}: ${c.pt}${comboStr}`, lx, rowY);
+      ctx.fillText(`#${catchCount - i}: ${c.pt}${comboStr}`, lx, rowY);
     }
     ctx.globalAlpha = 1;
   }
