@@ -759,9 +759,10 @@ async function initNicknameInput() {
   const btn = document.getElementById('nicknameChangeBtn');
 
   const isCustom = localStorage.getItem('icehole_nick_custom') === '1';
-  let current = isCustom ? getSavedNickname() : '';
 
-  if (!current) {
+  // 공개 IP 확보 (캐시 우선) — 기본 닉네임은 '항상' 이 IP로 유지
+  let ip = localStorage.getItem('icehole_ip') || '';
+  if (!ip) {
     input.placeholder = 'Loading IP...';
     let ok = false;
     // 1차: geojs (브라우저 CORS 지원, IP + 국가코드 제공)
@@ -770,7 +771,7 @@ async function initNicknameInput() {
       const data = await res.json();
       if (data && data.ip) {
         localStorage.setItem('icehole_flag', countryCodeToFlag(data.country_code || ''));
-        current = data.ip;
+        ip = data.ip;
         ok = true;
       }
     } catch(e) { /* 차단/실패 시 폴백 */ }
@@ -779,18 +780,21 @@ async function initNicknameInput() {
       try {
         const res = await fetch('https://api.ipify.org?format=json');
         const data = await res.json();
-        current = data.ip || getPlayerId();
+        ip = data.ip || getPlayerId();
       } catch(e) {
-        current = getPlayerId();
+        ip = getPlayerId();
       }
       localStorage.setItem('icehole_flag', '');
     }
-    saveNickname(current);
+    localStorage.setItem('icehole_ip', ip);
   }
 
-  _defaultIp = localStorage.getItem('icehole_nick') || current;
+  _defaultIp = ip;                       // 기본 닉네임 = 항상 공개 IP
+  if (!isCustom) saveNickname(ip);       // 미변경 시 저장 닉네임도 IP로
+
+  const current = isCustom ? getSavedNickname() : ip;
   input.value = current;
-  input.placeholder = _defaultIp;
+  input.placeholder = ip;                // 비우면 IP가 placeholder로 보임
   document.getElementById('titleFlag').textContent = getFlag();
   input.addEventListener('input', () => {
     btn.disabled = input.value.trim() === getSavedNickname();

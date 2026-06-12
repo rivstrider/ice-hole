@@ -23,7 +23,8 @@
       "Bash(python3 -c ' *)",
       "Bash(git commit -q -m 'Always show 100 leaderboard rows with '\\\\''-'\\\\'' placeholders *)",
       "Bash(git commit -q -m 'Set play time to 90s *)",
-      "Bash(git commit -q -m 'Tap truncated leaderboard nickname to show full name toast *)"
+      "Bash(git commit -q -m 'Tap truncated leaderboard nickname to show full name toast *)",
+      "Bash(git commit -q -m 'Keep default nickname as public IP after custom change *)"
     ]
   }
 }
