@@ -245,7 +245,7 @@
   .lb-header,
   .lb-item {
     display: grid;
-    grid-template-columns: 46px 26px minmax(0,110px) 56px 44px 56px;
+    grid-template-columns: 42px 24px minmax(0,84px) 50px 38px 50px 50px;
     align-items: center;
     gap: 0;
     font-family: 'Noto Sans KR', sans-serif;
@@ -262,7 +262,9 @@
   .lb-header > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .lb-header .lbh-score,
   .lb-header .lbh-catch,
-  .lb-header .lbh-combo { text-align: center; }
+  .lb-header .lbh-combo,
+  .lb-header .lbh-device { text-align: center; }
+  .lb-header .lbh-device { font-size: 9px; }
   #leaderboardList, #lbPopupList { display: flex; flex-direction: column; gap: 5px; flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(168,216,240,0.3) transparent; }
   #leaderboardList::-webkit-scrollbar, #lbPopupList::-webkit-scrollbar { width: 4px; }
   #leaderboardList::-webkit-scrollbar-track, #lbPopupList::-webkit-scrollbar-track { background: transparent; }
@@ -301,6 +303,8 @@
   .lb-score { font-size: 14px; color: #ffffff; text-align: center; white-space: nowrap; }
   .lb-catches { font-size: 12px; color: #7aa8c4; text-align: center; white-space: nowrap; }
   .lb-combo { font-size: 12px; color: #7aa8c4; text-align: center; white-space: nowrap; }
+  .lb-device { display: flex; align-items: center; justify-content: center; color: rgba(168,216,240,0.7); }
+  .lb-item.lb-me .lb-device { color: #ffffff; }
   #resultPanel {
     display: flex;
     flex-direction: row;
@@ -377,6 +381,7 @@
       <span class="lbh-score">SCORE</span>
       <span class="lbh-catch">FISH</span>
       <span class="lbh-combo">COMBO</span>
+      <span class="lbh-device">DEVICE</span>
     </div>
     <div id="lbPopupList"><div style="color:rgba(168,216,240,0.3);font-size:13px;font-family:'Noto Sans KR'">Loading...</div></div>
   </div>
@@ -411,6 +416,7 @@
         <span class="lbh-score">SCORE</span>
         <span class="lbh-catch">FISH</span>
         <span class="lbh-combo">COMBO</span>
+        <span class="lbh-device">DEVICE</span>
       </div>
       <div id="leaderboardList"><div style="color:rgba(168,216,240,0.3);font-size:13px;font-family:'Noto Sans KR'">Loading...</div></div>
     </div>
@@ -597,6 +603,26 @@ function spawnPtPopup(text, x, y) {
 function formatCatchEntry(c, num) {
   const combo = c.combo > 1 ? `, ${c.combo}x Combo` : '';
   return `#${num}: ${c.pt}  (${c.w.toFixed(1)}kg${combo})`;
+}
+
+// 기기 종류 감지 (모바일/PC) — 리더보드 DEVICE 아이콘용
+function getDeviceType() {
+  const ua = navigator.userAgent || '';
+  const touch = (navigator.maxTouchPoints || 0) > 0;
+  const mobileUA = /Mobi|Android|iPhone|iPod|iPad|Windows Phone/i.test(ua);
+  const iPadOS = touch && /Macintosh/.test(ua);  // iPadOS는 Mac UA로 위장
+  return (mobileUA || iPadOS) ? 'mobile' : 'pc';
+}
+
+// DEVICE 단색 아이콘 SVG (currentColor 사용 → 행 글자색 따라감)
+function deviceIconSVG(device) {
+  if (device === 'mobile') {
+    return `<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-label="mobile"><rect x="6" y="2" width="12" height="20" rx="2.5"/><rect x="10" y="18" width="4" height="1.6" rx="0.8" fill="rgba(0,26,51,0.9)"/></svg>`;
+  }
+  if (device === 'pc') {
+    return `<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-label="pc"><rect x="2" y="4" width="20" height="13" rx="1.5"/><rect x="9" y="18" width="6" height="2"/><rect x="7" y="20" width="10" height="1.6" rx="0.8"/></svg>`;
+  }
+  return '-';
 }
 
 function spawnFish() {
@@ -812,6 +838,7 @@ function renderLeaderboardRows(listEl, entries, highlightId) {
         <span class="lb-score">${e.score}</span>
         <span class="lb-catches">${e.catches}</span>
         <span class="lb-combo">${e.maxCombo > 1 ? e.maxCombo + 'x' : '-'}</span>
+        <span class="lb-device">${deviceIconSVG(e.device)}</span>
       `;
     } else {
       // 빈 슬롯: 순위만 표시, 나머지는 '-'
@@ -823,6 +850,7 @@ function renderLeaderboardRows(listEl, entries, highlightId) {
         <span class="lb-score">-</span>
         <span class="lb-catches">-</span>
         <span class="lb-combo">-</span>
+        <span class="lb-device">-</span>
       `;
     }
     listEl.appendChild(row);
@@ -884,7 +912,7 @@ async function autoSubmit() {
   const nickname = getSavedNickname();
   const flag = getFlag();
   try {
-    _lastDocId = await window.saveScoreToFirebase(nickname, totalScore, catchCount, maxCombo, getPlayerId(), flag);
+    _lastDocId = await window.saveScoreToFirebase(nickname, totalScore, catchCount, maxCombo, getPlayerId(), flag, getDeviceType());
     loadLeaderboard(_lastDocId);
   } catch(e) {
     loadLeaderboard();
@@ -2004,9 +2032,9 @@ draw();
     }
   };
 
-  window.saveScoreToFirebase = async function(name, score, catches, maxCombo, playerId, flag) {
+  window.saveScoreToFirebase = async function(name, score, catches, maxCombo, playerId, flag, device) {
     const ref = await addDoc(collection(db, 'leaderboard'), {
-      name, score, catches, maxCombo, playerId, flag: flag || '', timestamp: serverTimestamp()
+      name, score, catches, maxCombo, playerId, flag: flag || '', device: device || '', timestamp: serverTimestamp()
     });
     return ref.id;
   };
