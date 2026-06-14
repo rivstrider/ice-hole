@@ -1763,7 +1763,8 @@ function drawHUD(holeY, holeRy) {
     const cx     = W / 2;
     // 원의 중심을 화면 아래로 밀어 아치를 평탄하게
     const R      = Math.round(Math.min(340 * SCALE, W * 0.28));
-    const cy     = H + Math.round(R * 0.52);
+    // 얼음구멍 중심 기준으로 그 아래에 배치 (캔버스 하단 기준 X)
+    const cy     = holeY + holeRy + 90 * SCALE + R;
     const trackW = Math.round(16 * SCALE);
     // 11시=233°, 1시=307°, clockwise through 270°(up)
     const startA = 233 * DEG;
@@ -1801,15 +1802,25 @@ function drawHUD(holeY, holeRy) {
       ctx.stroke();
     }
 
-    // 버스트 번쩍
+    // 버스트 번쩍 — 게이지 전체에 붉은 발광 경고 (강조)
     if (tensionFlash > 0) {
-      const fillEndA = startA + tensionRatio * sweep;
-      ctx.beginPath();
-      ctx.arc(cx, cy, R, startA, fillEndA, false);
-      ctx.strokeStyle = `rgba(255,60,40,${tensionFlash * 0.55})`;
-      ctx.lineWidth = trackW + 6;
+      ctx.save();
       ctx.lineCap = 'round';
+      ctx.shadowColor = `rgba(255,40,30,${tensionFlash})`;
+      ctx.shadowBlur = 28 * SCALE;
+      // 외곽 발광 띠
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, startA, endA, false);
+      ctx.strokeStyle = `rgba(255,45,35,${tensionFlash})`;
+      ctx.lineWidth = trackW + 14 * SCALE;
       ctx.stroke();
+      // 한 번 더 덧칠해 글로우 강화
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, startA, endA, false);
+      ctx.strokeStyle = `rgba(255,90,70,${tensionFlash * 0.9})`;
+      ctx.lineWidth = trackW + 4 * SCALE;
+      ctx.stroke();
+      ctx.restore();
     }
 
     // 수치 + 라벨 (아치 꼭대기 안쪽)
