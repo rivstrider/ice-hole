@@ -795,7 +795,7 @@ async function initNicknameInput() {
   const current = isCustom ? getSavedNickname() : ip;
   input.value = current;
   input.placeholder = ip;                // 비우면 IP가 placeholder로 보임
-  document.getElementById('titleFlag').textContent = getFlag();
+  document.getElementById('titleFlag').textContent = flagDisplay(getFlag());
   input.addEventListener('input', () => {
     btn.disabled = input.value.trim() === getSavedNickname();
   });
@@ -808,6 +808,41 @@ function countryCodeToFlag(code) {
 
 function getFlag() {
   return localStorage.getItem('icehole_flag') || '';
+}
+
+// 국기 이모지 → 국가코드 대문자 (예: 🇰🇷 → KR). 유효하지 않으면 ''
+function flagToCC(flag) {
+  if (!flag) return '';
+  const cps = Array.from(flag).map(c => c.codePointAt(0));
+  if (cps.length === 2 && cps.every(cp => cp >= 0x1F1E6 && cp <= 0x1F1FF)) {
+    return cps.map(cp => String.fromCharCode(cp - 0x1F1E6 + 65)).join('');
+  }
+  return '';
+}
+
+// 이 기기가 국기 이모지를 실제로 렌더링하는지 1회 감지
+// (Android/Windows는 국기 글리프가 없어 'US' 같은 글자로 나옴 → 색이 없음)
+const FLAG_EMOJI_SUPPORTED = (function() {
+  try {
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = 16;
+    const cx = cv.getContext('2d');
+    cx.font = '16px sans-serif';
+    cx.fillStyle = '#000';
+    cx.fillText('🇺🇸', 0, 14);  // 🇺🇸
+    const d = cx.getImageData(0, 0, 16, 16).data;
+    for (let i = 0; i < d.length; i += 4) {
+      // 색이 있는 픽셀(컬러 국기)이 있으면 지원, 글자(단색)면 미지원
+      if (d[i + 3] > 0 && (d[i] !== d[i + 1] || d[i + 1] !== d[i + 2])) return true;
+    }
+    return false;
+  } catch (e) { return true; }
+})();
+
+// 화면 표시용 국기: 이모지 지원 시 이모지, 아니면 국가코드 글자(KR 등)
+function flagDisplay(flag) {
+  if (!flag) return '';
+  return FLAG_EMOJI_SUPPORTED ? flag : flagToCC(flag);
 }
 
 function applyNicknameChange() {
@@ -837,7 +872,7 @@ function renderLeaderboardRows(listEl, entries, highlightId) {
       row.className = 'lb-item' + (e.id === highlightId ? ' lb-me' : '');
       row.innerHTML = `
         <span class="lb-rank ${rankClass}">${i < 3 ? medals[i] : (i+1)}</span>
-        <span class="lb-flag">${e.flag || ''}</span>
+        <span class="lb-flag">${flagDisplay(e.flag)}</span>
         <span class="lb-name">${e.name}</span>
         <span class="lb-score">${e.score}</span>
         <span class="lb-catches">${e.catches}</span>
