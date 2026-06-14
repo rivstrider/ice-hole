@@ -826,7 +826,11 @@ function flagImgHTML(flag, px) {
   const cc = flagToCC(flag);
   if (!cc) return '';
   const h = px || 13;
-  return `<img class="flag-img" src="https://flagcdn.com/h40/${cc}.png" alt="${cc}" ` +
+  const ccU = cc.toUpperCase();
+  // 이미지 로드 실패 시 국가코드 글자로 대체 (모든 환경에서 최소한 코드는 표시)
+  return `<img class="flag-img" src="https://flagcdn.com/h40/${cc}.png" alt="${ccU}" ` +
+         `referrerpolicy="no-referrer" ` +
+         `onerror="this.outerHTML='<span style=&quot;font-size:9px;color:#7aa8c4&quot;>${ccU}</span>'" ` +
          `style="height:${h}px;width:auto;vertical-align:middle;border-radius:2px;">`;
 }
 
