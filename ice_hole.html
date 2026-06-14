@@ -637,12 +637,12 @@ function spawnFish() {
   isBursting = false;
 }
 
-function addParticles(x, y, count=8, color='#a8d8f0') {
+function addParticles(x, y, count=8, color='#a8d8f0', power=1) {
   for (let i = 0; i < count; i++) {
     particles.push({
       x, y,
-      vx: (Math.random()-0.5)*4,
-      vy: -Math.random()*3-1,
+      vx: (Math.random()-0.5)*4*power,
+      vy: (-Math.random()*3-1)*power,
       life: 1.0,
       color,
       size: Math.random()*4+2,
@@ -1283,7 +1283,7 @@ function update(dt) {
           isBursting = true;
           burstDuration = 0.7;
           tensionFlash = 1.0;
-          addParticles(holeX, waterY, 14, '#ff6b6b');
+          addParticles(holeX + floatDriftX, waterY, 42, '#ff6b6b', 2.2);
           showMsg('LAST RUN!', '#ff5a5a', 1.2);
         }
       }
@@ -1295,7 +1295,7 @@ function update(dt) {
         burstDuration = 0.3 + Math.random() * 0.25;
         burstTimer = 2.5 + Math.random() * 2.5;
         tensionFlash = 1.0;
-        addParticles(holeX, waterY, 8, '#a8d8f0');
+        addParticles(holeX + floatDriftX, waterY, 24, '#a8d8f0', 2);
       }
       if (isBursting) {
         burstDuration -= dt;
@@ -1670,7 +1670,7 @@ function drawHUD(holeY, holeRy) {
   const sec = Math.floor(timeLeft % 60);
   const timeStr = `${min.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
   ctx.font = `bold ${48 * S}px "Noto Sans KR"`;
-  ctx.fillStyle = timeLeft < 10 ? '#ff5a5a' : '#ffffff';
+  ctx.fillStyle = timeLeft < 11 ? '#ff5a5a' : '#ffffff';
   ctx.fillText(timeStr, lx, valueY);
 
   // --- FISH ---
