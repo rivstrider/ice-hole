@@ -9,7 +9,7 @@ service cloud.firestore {
 
       // 생성: 필드 구성과 값 범위가 올바를 때만 (쓰레기 데이터/악성 주입 차단)
       allow create: if request.resource.data.keys().hasOnly(
-                        ['name','score','catches','maxCombo','playerId','flag','device','timestamp'])
+                        ['name','score','catches','maxCombo','playerId','flag','device','missCount','lineBreaks','catchLog','timestamp'])
                     && request.resource.data.name is string
                     && request.resource.data.name.size() >= 1
                     && request.resource.data.name.size() <= 30
@@ -27,7 +27,15 @@ service cloud.firestore {
                     && request.resource.data.flag is string
                     && request.resource.data.flag.size() <= 16
                     && request.resource.data.device is string
-                    && request.resource.data.device.size() <= 16;
+                    && request.resource.data.device.size() <= 16
+                    && request.resource.data.missCount is number
+                    && request.resource.data.missCount >= 0
+                    && request.resource.data.missCount <= 100000
+                    && request.resource.data.lineBreaks is number
+                    && request.resource.data.lineBreaks >= 0
+                    && request.resource.data.lineBreaks <= 100000
+                    && request.resource.data.catchLog is list
+                    && request.resource.data.catchLog.size() <= 300;
 
       // 수정: 닉네임(name)만 변경 가능, 나머지 필드는 불변
       allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name'])

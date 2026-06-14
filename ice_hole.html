@@ -496,6 +496,8 @@ let bestScore = 0;
 let catchCount = 0;
 let combo = 0;
 let maxCombo = 0;
+let missCount = 0;     // 훅셋 미스 횟수 (DB 기록용)
+let lineBreaks = 0;    // 라인 브레이크 횟수 (DB 기록용)
 let comboTimer = 0; // 콤보 타임아웃 타이머
 // 콤보 메시지 애니메이션
 let comboMsg = {
@@ -700,6 +702,8 @@ function startGame() {
   timeLeft = 90;
   totalScore = 0;
   catchCount = 0;
+  missCount = 0;
+  lineBreaks = 0;
   combo = 0;
   maxCombo = 0;
   comboTimer = 0;
@@ -952,7 +956,9 @@ async function autoSubmit() {
   const nickname = getSavedNickname();
   const flag = getFlag();
   try {
-    _lastDocId = await window.saveScoreToFirebase(nickname, totalScore, catchCount, maxCombo, getPlayerId(), flag, getDeviceType());
+    _lastDocId = await window.saveScoreToFirebase(nickname, totalScore, catchCount, maxCombo, getPlayerId(), flag, getDeviceType(), {
+      missCount, lineBreaks, catchLog: catchLog.slice()
+    });
     loadLeaderboard(_lastDocId);
   } catch(e) {
     loadLeaderboard();
@@ -1355,6 +1361,7 @@ function update(dt) {
       }
       if (highTensionTimer >= 0.35) {
         addParticles(holeX, waterY, 12, '#ff6b6b');
+        lineBreaks++;
         combo = 0; comboTimer = 0; hideComboMsg();
         showMsg('LINE BREAK!', '#000000', 2.0);
         state = STATE.FAIL; fish = null;
@@ -1996,6 +2003,7 @@ canvas.addEventListener('pointerdown', e => {
       showComboMsg(combo);
       addParticles(W/2, H*0.44, 10, '#ffcc44');
     } else {
+      missCount++;
       combo = 0;
       comboTimer = 0;
       hideComboMsg();
@@ -2092,9 +2100,14 @@ draw();
     }
   };
 
-  window.saveScoreToFirebase = async function(name, score, catches, maxCombo, playerId, flag, device) {
+  window.saveScoreToFirebase = async function(name, score, catches, maxCombo, playerId, flag, device, extra) {
+    extra = extra || {};
     const ref = await addDoc(collection(db, 'leaderboard'), {
-      name, score, catches, maxCombo, playerId, flag: flag || '', device: device || '', timestamp: serverTimestamp()
+      name, score, catches, maxCombo, playerId, flag: flag || '', device: device || '',
+      missCount: extra.missCount || 0,
+      lineBreaks: extra.lineBreaks || 0,
+      catchLog: Array.isArray(extra.catchLog) ? extra.catchLog.slice(0, 200) : [],
+      timestamp: serverTimestamp()
     });
     return ref.id;
   };
