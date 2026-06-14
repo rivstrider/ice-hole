@@ -1415,10 +1415,10 @@ function draw() {
     // 타이틀 로고 (상단 중앙, 가로폭 기준으로 모바일에서도 안 잘리게 스케일)
     if (imgReady('title')) {
       const t = IMG.title;
-      const tw = Math.min(W * 0.85, 640 * SCALE);
+      const tw = Math.min(W * 0.92, 760 * SCALE);
       const th = tw * (t.naturalHeight / t.naturalWidth);
       const tx = (W - tw) / 2;
-      const ty = Math.max(24 * SCALE, H * 0.08);
+      const ty = Math.max(24 * SCALE, H * 0.10);
       ctx.drawImage(t, tx, ty, tw, th);
     }
     return; // 타이틀 화면은 배경 + 로고만 그리고 종료
