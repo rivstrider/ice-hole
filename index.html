@@ -2,10 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="refresh" content="0; url=ice_hole.html">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ice Hole</title>
+<script>
+  // 항상 최신 게임 파일을 받도록 캐시 무효화 (배포 즉시 반영)
+  location.replace('ice_hole.html?v=' + Date.now());
+</script>
 </head>
 <body>
-<a href="ice_hole.html">Play Ice Hole</a>
+<noscript><a href="ice_hole.html">Play Ice Hole</a></noscript>
 </body>
 </html>
