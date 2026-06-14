@@ -795,7 +795,7 @@ async function initNicknameInput() {
   const current = isCustom ? getSavedNickname() : ip;
   input.value = current;
   input.placeholder = ip;                // 비우면 IP가 placeholder로 보임
-  document.getElementById('titleFlag').innerHTML = flagImgHTML(getFlag(), 16);
+  document.getElementById('titleFlag').textContent = getFlag();
   input.addEventListener('input', () => {
     btn.disabled = input.value.trim() === getSavedNickname();
   });
@@ -808,30 +808,6 @@ function countryCodeToFlag(code) {
 
 function getFlag() {
   return localStorage.getItem('icehole_flag') || '';
-}
-
-// 국기 이모지 → 국가코드(소문자). Android/Windows는 국기 이모지를 못 그리므로
-// 이미지로 렌더링하기 위해 코드로 역변환한다.
-function flagToCC(flag) {
-  if (!flag) return '';
-  const cps = Array.from(flag).map(c => c.codePointAt(0));
-  if (cps.length === 2 && cps.every(cp => cp >= 0x1F1E6 && cp <= 0x1F1FF)) {
-    return cps.map(cp => String.fromCharCode(cp - 0x1F1E6 + 65)).join('').toLowerCase();
-  }
-  return '';
-}
-
-// 국기 이미지 <img> HTML (모든 플랫폼에서 동일하게 표시). 코드가 없으면 빈 문자열.
-function flagImgHTML(flag, px) {
-  const cc = flagToCC(flag);
-  if (!cc) return '';
-  const h = px || 13;
-  const ccU = cc.toUpperCase();
-  // 이미지 로드 실패 시 국가코드 글자로 대체 (모든 환경에서 최소한 코드는 표시)
-  return `<img class="flag-img" src="https://flagcdn.com/h40/${cc}.png" alt="${ccU}" ` +
-         `referrerpolicy="no-referrer" ` +
-         `onerror="this.outerHTML='<span style=&quot;font-size:9px;color:#7aa8c4&quot;>${ccU}</span>'" ` +
-         `style="height:${h}px;width:auto;vertical-align:middle;border-radius:2px;">`;
 }
 
 function applyNicknameChange() {
@@ -861,7 +837,7 @@ function renderLeaderboardRows(listEl, entries, highlightId) {
       row.className = 'lb-item' + (e.id === highlightId ? ' lb-me' : '');
       row.innerHTML = `
         <span class="lb-rank ${rankClass}">${i < 3 ? medals[i] : (i+1)}</span>
-        <span class="lb-flag">${flagImgHTML(e.flag) || ''}</span>
+        <span class="lb-flag">${e.flag || ''}</span>
         <span class="lb-name">${e.name}</span>
         <span class="lb-score">${e.score}</span>
         <span class="lb-catches">${e.catches}</span>
