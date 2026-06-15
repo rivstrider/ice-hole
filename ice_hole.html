@@ -1605,13 +1605,16 @@ function draw() {
         const barX = W / 2 - barW / 2;
         const barY = comboMsg.y + 14 * SCALE;
         const barAlpha = Math.min(1, comboMsg.alpha + 0.4);
+        const cy = barY + barH / 2;
         ctx.save();
         ctx.globalAlpha = barAlpha;
-        // 트랙
-        ctx.fillStyle = 'rgba(255,255,255,0.2)';
-        roundRect(ctx, barX, barY, barW, barH, r); ctx.fill();
-        // 남은 시간 (길수록 초록 → 짧을수록 빨강)
-        ctx.fillStyle = ratio > 0.5 ? '#7ef7a0' : ratio > 0.25 ? '#ffcc44' : '#ff5a3c';
+        // 배경 트랙: 2px 얇은 검붉은색 실선
+        ctx.strokeStyle = '#5a0d0d';
+        ctx.lineWidth = 2 * SCALE;
+        ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(barX, cy); ctx.lineTo(barX + barW, cy); ctx.stroke();
+        // 남은 시간: 콤보 메시지와 같은 붉은색 단색
+        ctx.fillStyle = '#ff2200';
         roundRect(ctx, barX, barY, Math.max(barH, barW * ratio), barH, r); ctx.fill();
         ctx.restore();
       }
