@@ -1601,7 +1601,7 @@ function draw() {
       // 콤보 인정 시간 타이머 바 (메시지 바로 아래, comboTimer 12초 기준)
       if (combo > 0 && comboTimer > 0) {
         const ratio = Math.max(0, Math.min(1, comboTimer / 12.0));
-        const barW = 130 * SCALE, barH = 6 * SCALE, r = barH / 2;
+        const barW = 130 * SCALE, barH = 4 * SCALE, r = barH / 2;
         const barX = W / 2 - barW / 2;
         const barY = comboMsg.y + 14 * SCALE;
         const barAlpha = Math.min(1, comboMsg.alpha + 0.4);
@@ -1609,7 +1609,7 @@ function draw() {
         ctx.save();
         ctx.globalAlpha = barAlpha;
         // 배경 트랙: 2px 얇은 검붉은색 실선
-        ctx.strokeStyle = '#5a0d0d';
+        ctx.strokeStyle = 'rgba(90,13,13,0.75)';
         ctx.lineWidth = 2 * SCALE;
         ctx.lineCap = 'round';
         ctx.beginPath(); ctx.moveTo(barX, cy); ctx.lineTo(barX + barW, cy); ctx.stroke();
