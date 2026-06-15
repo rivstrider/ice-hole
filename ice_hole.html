@@ -6,6 +6,15 @@
 <title>ICE HOLE</title>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
+  /* 국기 전용 웹폰트 — Windows/Android 등 국기 글리프 없는 OS에서도 🇰🇷가 국기로 렌더됨.
+     국기 코드포인트만 커버(unicode-range)하므로 다른 글자엔 영향 없음. */
+  @font-face {
+    font-family: 'Twemoji Country Flags';
+    unicode-range: U+1F1E6-1F1FF, U+1F3F4, U+E0062-E0063, U+E0065, U+E0067, U+E006C, U+E006E, U+E0073-E0074, U+E0077, U+E007F;
+    src: url('https://cdn.jsdelivr.net/npm/country-flag-emoji-polyfill@0.1.8/dist/TwemojiCountryFlags.woff2') format('woff2');
+    font-display: swap;
+  }
+  .lb-flag, #titleFlag { font-family: 'Twemoji Country Flags', 'Noto Sans KR', sans-serif; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body {
     width: 100%;
@@ -815,39 +824,9 @@ function getFlag() {
   return localStorage.getItem('icehole_flag') || '';
 }
 
-// 국기 이모지 → 국가코드 대문자 (예: 🇰🇷 → KR). 유효하지 않으면 ''
-function flagToCC(flag) {
-  if (!flag) return '';
-  const cps = Array.from(flag).map(c => c.codePointAt(0));
-  if (cps.length === 2 && cps.every(cp => cp >= 0x1F1E6 && cp <= 0x1F1FF)) {
-    return cps.map(cp => String.fromCharCode(cp - 0x1F1E6 + 65)).join('');
-  }
-  return '';
-}
-
-// 이 기기가 국기 이모지를 실제로 렌더링하는지 1회 감지
-// (Android/Windows는 국기 글리프가 없어 'US' 같은 글자로 나옴 → 색이 없음)
-const FLAG_EMOJI_SUPPORTED = (function() {
-  try {
-    const cv = document.createElement('canvas');
-    cv.width = cv.height = 16;
-    const cx = cv.getContext('2d');
-    cx.font = '16px sans-serif';
-    cx.fillStyle = '#000';
-    cx.fillText('🇺🇸', 0, 14);  // 🇺🇸
-    const d = cx.getImageData(0, 0, 16, 16).data;
-    for (let i = 0; i < d.length; i += 4) {
-      // 색이 있는 픽셀(컬러 국기)이 있으면 지원, 글자(단색)면 미지원
-      if (d[i + 3] > 0 && (d[i] !== d[i + 1] || d[i + 1] !== d[i + 2])) return true;
-    }
-    return false;
-  } catch (e) { return true; }
-})();
-
-// 화면 표시용 국기: 이모지 지원 시 이모지, 아니면 국가코드 글자(KR 등)
+// 화면 표시용 국기: 항상 이모지 (국기 웹폰트가 모든 OS에서 렌더 보장)
 function flagDisplay(flag) {
-  if (!flag) return '';
-  return FLAG_EMOJI_SUPPORTED ? flag : flagToCC(flag);
+  return flag || '';
 }
 
 function applyNicknameChange() {
