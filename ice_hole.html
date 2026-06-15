@@ -600,6 +600,7 @@ function hideComboMsg() {
   if (comboMsg.active && comboMsg.phase !== 'exit') {
     comboMsg.phase = 'exit';
     comboMsg.timer = 0;
+    comboMsg.exitFromAlpha = comboMsg.alpha;   // 현재 알파에서 이어서 페이드(번쩍 방지)
   }
 }
 
@@ -1102,7 +1103,8 @@ function update(dt) {
       // 콤보 해제 시 빠르게 사라짐 (0.15초)
       comboMsg.timer += dt;
       const t = Math.min(comboMsg.timer / 0.15, 1);
-      comboMsg.alpha = 1 - t;
+      const from = (comboMsg.exitFromAlpha != null) ? comboMsg.exitFromAlpha : 1;
+      comboMsg.alpha = from * (1 - t);
       if (t >= 1) { comboMsg.active = false; comboMsg.phase = 'idle'; }
     }
   }
@@ -1609,7 +1611,7 @@ function draw() {
         ctx.save();
         ctx.globalAlpha = barAlpha;
         // 배경 트랙: 2px 얇은 검붉은색 실선
-        ctx.strokeStyle = 'rgba(90,13,13,0.75)';
+        ctx.strokeStyle = 'rgba(0,0,0,0.5)';
         ctx.lineWidth = 2 * SCALE;
         ctx.lineCap = 'round';
         ctx.beginPath(); ctx.moveTo(barX, cy); ctx.lineTo(barX + barW, cy); ctx.stroke();
